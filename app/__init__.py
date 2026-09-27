@@ -1,4 +1,4 @@
-"""Who Should I Draft web app (local only).
+"""Front Office web app (local only).
 
 Run:  flask --app app run --debug     then open http://127.0.0.1:5000
 """

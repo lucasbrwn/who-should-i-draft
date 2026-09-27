@@ -1,4 +1,8 @@
-# Who Should I Draft?
+# Front Office
+
+**Your league. Your data. Your advantage.**
+
+*Course project: "Who Should I Draft?"*
 
 An AI fantasy football draft assistant. It projects player performance from real stats, usage, and defensive matchups, then recommends the best pick for your league's settings — with the reasons behind every pick.
 
