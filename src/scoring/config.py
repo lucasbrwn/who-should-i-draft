@@ -13,7 +13,8 @@ import re
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
-LEAGUES_DIR = Path("data/leagues")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+LEAGUES_DIR = PROJECT_ROOT / "data" / "leagues"
 
 SUPPORTED_TYPES = {"redraft": "Redraft", "bestball": "Best Ball"}
 PLANNED_TYPES = {"chop": "Chop / Guillotine", "dynasty": "Dynasty"}

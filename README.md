@@ -16,6 +16,12 @@ pytest
 
 ## Web app
 
+```powershell
+.\scripts\run_app.ps1                      # Windows, from the project folder
+```
+
+or, with the virtual environment activated (`...\Scripts\Activate.ps1` in PowerShell, `source .venv/bin/activate` on macOS/Linux), from the project folder:
+
 ```bash
 flask --app app run --debug
 ```
