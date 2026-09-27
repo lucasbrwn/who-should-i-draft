@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h1>Your leagues</h1>
+  {% if leagues %}
+    <ul class="cards">
+      {% for slug, config in leagues.items() %}
+      <li class="card">
+        <div>
+          <h2>{{ config.league.name }}</h2>
+          <p class="muted">{{ config.summary() }}</p>
+          <p class="muted small">{{ config.roster.starters }} starters · {{ config.roster.size }}-man roster</p>
+        </div>
+        <div class="card-actions">
+          <a class="button" href="{{ url_for('edit_league', slug=slug) }}">Edit</a>
+          <form method="post" action="{{ url_for('delete', slug=slug) }}"
+                onsubmit="return confirm('Delete {{ config.league.name }}?')">
+            <button class="button ghost" type="submit">Delete</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No leagues yet. Start from a preset below and adjust anything.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h1>New league</h1>
+  <ul class="cards presets">
+    {% for key, preset in presets.items() %}
+    <li>
+      <a class="card link" href="{{ url_for('new_league', preset=key) }}">
+        <h2>{{ preset.league.name }}</h2>
+        <p class="muted">{{ preset.summary() }}</p>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

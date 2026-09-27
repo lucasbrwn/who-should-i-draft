@@ -14,6 +14,14 @@ pytest
 
 > If the repo lives in a synced folder (OneDrive, Dropbox), create the virtual environment outside it, e.g. `python -m venv %USERPROFILE%\.venvs\whoshouldidraft`, so thousands of package files aren't synced.
 
+## Web app
+
+```bash
+flask --app app run --debug
+```
+
+Then open http://127.0.0.1:5000. `--debug` reloads automatically when you save a Python or template file (refresh the browser to see changes). League settings are saved as JSON in `data/leagues/`.
+
 ## Data
 
 ```bash

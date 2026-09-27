@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% macro number(item, disabled=False) -%}
+  <label class="field{% if disabled %} disabled{% endif %}">
+    <span class="label">{{ item.label }}</span>
+    <input type="number" name="{{ item.key }}" value="{{ item.value }}"
+           min="{{ item.min }}" max="{{ item.max }}" step="{{ item.step }}"
+           {% if disabled %}disabled{% endif %} required>
+    {% if item.help %}<span class="help">{{ item.help }}</span>{% endif %}
+  </label>
+{%- endmacro %}
+
+{% block title %}{{ config.league.name }} · League settings{% endblock %}
+{% block content %}
+<h1>{{ "Edit league" if slug else "New league" }}</h1>
+
+{% if errors %}
+<div class="errors" role="alert">
+  <strong>Please fix the following:</strong>
+  <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+{% if not slug %}
+<div class="preset-bar">
+  <span class="muted">Start from a preset:</span>
+  {% for key, preset in presets.items() %}
+    <a class="chip" href="{{ url_for('new_league', preset=key) }}">{{ preset.league.name }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('save') }}" class="settings">
+  <input type="hidden" name="original_slug" value="{{ slug or '' }}">
+
+  <fieldset>
+    <legend>League</legend>
+    <div class="grid">
+      <label class="field wide">
+        <span class="label">League name</span>
+        <input type="text" name="league.name" value="{{ config.league.name }}" maxlength="60" required>
+      </label>
+      <label class="field">
+        <span class="label">League type</span>
+        <select name="league.type">
+          {% for value, label in supported.items() %}
+            <option value="{{ value }}" {% if config.league.type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+          {% for value, label in planned.items() %}
+            <option value="{{ value }}" disabled>{{ label }} (coming later)</option>
+          {% endfor %}
+        </select>
+      </label>
+      {{ number(sections.teams) }}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Roster <span class="muted small" id="roster-total"></span></legend>
+    <div class="grid roster">
+      {% for item in sections.roster %}
+        {{ number(item, disabled=(item.key == 'roster.IDP')) }}
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Scoring</legend>
+    <div class="quick">
+      <span class="muted">Receptions:</span>
+      <button type="button" class="chip" data-ppr="1">PPR</button>
+      <button type="button" class="chip" data-ppr="0.5">Half-PPR</button>
+      <button type="button" class="chip" data-ppr="0">Standard</button>
+      <span class="muted">Passing TD:</span>
+      <button type="button" class="chip" data-pass-td="4">4 pts</button>
+      <button type="button" class="chip" data-pass-td="6">6 pts</button>
+    </div>
+    {% for group, items in sections.scoring.items() %}
+      <h3>{{ group }}</h3>
+      <div class="grid">
+        {% for item in items %}{{ number(item) }}{% endfor %}
+      </div>
+    {% endfor %}
+  </fieldset>
+
+  <div class="actions">
+    <button class="button primary" type="submit">Save league</button>
+    <a class="button ghost" href="{{ url_for('index') }}">Cancel</a>
+  </div>
+</form>
+
+<script>
+  const form = document.querySelector("form.settings");
+  const setValue = (name, v) => { form.elements[name].value = v; };
+  document.querySelectorAll("[data-ppr]").forEach(b =>
+    b.addEventListener("click", () => setValue("scoring.receptions", b.dataset.ppr)));
+  document.querySelectorAll("[data-pass-td]").forEach(b =>
+    b.addEventListener("click", () => setValue("scoring.passing_tds", b.dataset.passTd)));
+
+  const rosterInputs = [...document.querySelectorAll(".roster input")];
+  const total = document.getElementById("roster-total");
+  const updateTotal = () => {
+    let starters = 0, bench = 0;
+    for (const input of rosterInputs) {
+      const n = parseInt(input.value, 10) || 0;
+      if (input.name === "roster.BENCH") bench = n; else starters += n;
+    }
+    total.textContent = `· ${starters} starters, ${starters + bench}-man roster`;
+  };
+  rosterInputs.forEach(i => i.addEventListener("input", updateTotal));
+  updateTotal();
+</script>
+{% endblock %}
