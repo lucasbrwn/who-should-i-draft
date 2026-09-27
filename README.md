@@ -12,6 +12,8 @@ pip install -r requirements.txt
 pytest
 ```
 
+> If the repo lives in a synced folder (OneDrive, Dropbox), create the virtual environment outside it, e.g. `python -m venv %USERPROFILE%\.venvs\whoshouldidraft`, so thousands of package files aren't synced.
+
 ## Layout
 
 | Path | Module |
