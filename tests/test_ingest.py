@@ -1,7 +1,8 @@
 import polars as pl
 
 from src.ingest.checks import check_player_stats, standard_fantasy_points
-from src.ingest.crosscheck import STATS, compare, normalize_name, stats_from_pbp
+from src.ingest.crosscheck import STATS, compare, stats_from_pbp
+from src.ingest.ids import normalize_name
 
 ZERO_STATS = {c: 0 for c in [
     "passing_yards", "passing_tds", "passing_interceptions", "rushing_yards", "rushing_tds",

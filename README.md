@@ -19,6 +19,7 @@ pytest
 ```bash
 python -m src.ingest.player_stats     # weekly player stats, 2020+
 python -m src.ingest.schedules        # schedules, Vegas lines, weather + line snapshot
+python -m src.ingest.availability     # snap counts + injury reports (run after player_stats)
 python -m src.ingest.crosscheck       # verify stats against play-by-play
 ```
 

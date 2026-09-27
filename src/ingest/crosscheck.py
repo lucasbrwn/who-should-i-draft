@@ -14,6 +14,7 @@ from pathlib import Path
 import nflreadpy
 import polars as pl
 
+from src.ingest.ids import normalize_name
 from src.ingest.player_stats import default_seasons, read_player_stats
 
 OUT_DIR = Path("data/processed/crosscheck")
@@ -104,16 +105,6 @@ def compare(weekly: pl.DataFrame, rebuilt: pl.DataFrame) -> tuple[pl.DataFrame, 
     any_off = pl.any_horizontal([pl.col(s) != pl.col(f"{s}_pbp") for s in STATS])
     mismatches = joined.filter(any_off)
     return summary, mismatches
-
-
-def normalize_name(name: pl.Expr) -> pl.Expr:
-    """'Brian Thomas Jr.' and 'C.J. Stroud' -> 'brian thomas', 'cj stroud'."""
-    return (
-        name.str.to_lowercase()
-        .str.replace_all(r"[.'\-]", "")
-        .str.replace(r"\s+(jr|sr|ii|iii|iv|v)$", "")
-        .str.strip_chars()
-    )
 
 
 def compare_to_official(season: int, official_csv: Path) -> pl.DataFrame:
