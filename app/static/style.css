@@ -1,30 +1,42 @@
+/* Football theme: turf green + chalk white. */
 :root {
-  --bg: #f6f7f9;
+  --bg: #f2f6f2;
   --surface: #ffffff;
-  --text: #1b1f24;
-  --muted: #5f6b7a;
-  --border: #dde2e8;
-  --accent: #1f6feb;
+  --text: #13221a;
+  --muted: #58695e;
+  --border: #d3e2d6;
+  --accent: #1e7a3a;
+  --accent-hover: #16622e;
+  --accent-soft: #e3f1e6;
   --accent-text: #ffffff;
+  --turf-a: #2f7d34;
+  --turf-b: #2a7230;
+  --chalk: #ffffff;
   --error-bg: #fdecec;
   --error-border: #e5a1a1;
-  --notice-bg: #e8f3ea;
-  --notice-border: #9fcfaa;
+  --notice-bg: #e3f1e6;
+  --notice-border: #8cc79c;
   --radius: 10px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f1216;
-    --surface: #181c22;
-    --text: #e6e9ed;
-    --muted: #9aa5b1;
-    --border: #2b323b;
-    --accent: #4c8dff;
+    --bg: #0b140f;
+    --surface: #122019;
+    --text: #e7f0e9;
+    --muted: #9bb2a2;
+    --border: #22372a;
+    --accent: #3da35a;
+    --accent-hover: #4fb86c;
+    --accent-soft: #173323;
+    --accent-text: #06120a;
+    --turf-a: #1d4f26;
+    --turf-b: #1a4722;
+    --chalk: #e9f3eb;
     --error-bg: #3a1d1d;
     --error-border: #7a3a3a;
-    --notice-bg: #1c3323;
-    --notice-border: #3d6b48;
+    --notice-bg: #173323;
+    --notice-border: #2f6b41;
   }
 }
 
@@ -37,18 +49,59 @@ body {
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Header: mowed turf stripes with yard lines and hash marks */
 .topbar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 24px;
+  position: relative;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 118px, var(--chalk) 118px 120px),
+    repeating-linear-gradient(90deg, var(--turf-a) 0 60px, var(--turf-b) 60px 120px);
+  border-bottom: 4px solid var(--chalk);
+  padding: 18px 24px;
 }
-.brand { color: var(--text); font-weight: 700; text-decoration: none; }
+.topbar::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 6px;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, 0.55) 22px 24px);
+}
+.brand {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  /* solid badge so the yard lines pass behind the logo instead of through it */
+  background: var(--turf-b);
+  padding: 6px 14px 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px var(--turf-b), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.brand svg { width: 34px; height: 22px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)); }
 
 .page { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
 
-h1 { font-size: 1.4rem; margin: 24px 0 12px; }
+h1 {
+  font-size: 1.4rem;
+  margin: 28px 0 14px;
+  padding-bottom: 6px;
+  border-bottom: 3px solid var(--accent);
+  display: inline-block;
+}
 h2 { font-size: 1.05rem; margin: 0 0 4px; }
-h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 20px 0 8px; }
+h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 20px 0 8px;
+}
 .muted { color: var(--muted); margin: 0; }
 .small { font-size: 0.85rem; }
 
@@ -57,6 +110,7 @@ h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; color
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 5px solid var(--accent);
   border-radius: var(--radius);
   padding: 16px;
   display: flex;
@@ -64,8 +118,14 @@ h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; color
   align-items: center;
   gap: 16px;
 }
-.card.link { display: block; color: inherit; text-decoration: none; height: 100%; }
-.card.link:hover { border-color: var(--accent); }
+.card.link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  height: 100%;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.card.link:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(20, 70, 35, 0.15); }
 .card-actions { display: flex; gap: 8px; }
 .card-actions form { margin: 0; }
 
@@ -80,10 +140,11 @@ h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; color
   text-decoration: none;
   cursor: pointer;
 }
-.button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.button:hover, .chip:hover { border-color: var(--accent); color: var(--accent); }
+.button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+.button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-text); }
 .button.ghost { background: transparent; }
-.chip { padding: 4px 10px; border-radius: 999px; font-size: 0.85rem; }
-.chip:hover, .button:hover { border-color: var(--accent); }
+.chip { padding: 4px 12px; border-radius: 999px; font-size: 0.85rem; background: var(--accent-soft); border-color: transparent; }
 
 .preset-bar, .quick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px; }
 
@@ -94,7 +155,18 @@ h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; color
   padding: 16px 20px 20px;
   margin: 0 0 16px;
 }
-.settings legend { font-weight: 700; padding: 0 6px; }
+/* Section labels styled like a yard marker */
+.settings legend {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.85rem;
+  background: var(--accent);
+  color: var(--accent-text);
+  padding: 3px 12px;
+  border-radius: 6px;
+}
+.settings legend .muted { color: inherit; opacity: 0.85; text-transform: none; letter-spacing: 0; font-weight: 500; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; }
 .grid.roster { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
@@ -116,7 +188,7 @@ h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; color
 .errors, .notice { border-radius: var(--radius); padding: 12px 16px; margin: 0 0 16px; }
 .errors { background: var(--error-bg); border: 1px solid var(--error-border); }
 .errors ul { margin: 6px 0 0; padding-left: 20px; }
-.notice { background: var(--notice-bg); border: 1px solid var(--notice-border); }
+.notice { background: var(--notice-bg); border: 1px solid var(--notice-border); border-left: 5px solid var(--accent); }
 
 .actions { display: flex; gap: 8px; }
 

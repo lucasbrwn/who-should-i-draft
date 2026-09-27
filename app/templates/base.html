@@ -5,10 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Who Should I Draft?{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='football.svg') }}" type="image/svg+xml">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="{{ url_for('index') }}">Who Should I Draft?</a>
+    <a class="brand" href="{{ url_for('index') }}">
+      <svg viewBox="0 0 34 22" aria-hidden="true">
+        <ellipse cx="17" cy="11" rx="16" ry="10" fill="#7a3e1d"/>
+        <path d="M5 4.5 Q3 11 5 17.5 M29 4.5 Q31 11 29 17.5" stroke="#fff" stroke-width="1.6" fill="none"/>
+        <path d="M11 11 H23" stroke="#fff" stroke-width="1.6"/>
+        <path d="M13 8.5 V13.5 M15.7 8.5 V13.5 M18.3 8.5 V13.5 M21 8.5 V13.5" stroke="#fff" stroke-width="1.3"/>
+      </svg>
+      Who Should I Draft?
+    </a>
   </header>
   <main class="page">
     {% with messages = get_flashed_messages() %}
