@@ -9,6 +9,7 @@ spread_line > 0 means the home team is favored (nflverse convention, matches `re
 Usage:
     python -m src.ingest.schedules                  # 2020 through current season + snapshot
     python -m src.ingest.schedules --seasons 2024
+    python -m src.ingest.schedules --current        # what the scheduled task runs
 """
 
 import argparse
@@ -137,8 +138,12 @@ def read_schedules(seasons: list[int] | None = None) -> pl.DataFrame:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seasons", type=int, nargs="+", default=None)
+    parser.add_argument("--current", action="store_true", help="only the current season (for scheduled snapshots)")
     args = parser.parse_args()
-    ingest(args.seasons or default_seasons())
+    if args.current:
+        ingest([nflreadpy.get_current_season()])
+    else:
+        ingest(args.seasons or default_seasons())
 
 
 if __name__ == "__main__":

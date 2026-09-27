@@ -14,6 +14,16 @@ pytest
 
 > If the repo lives in a synced folder (OneDrive, Dropbox), create the virtual environment outside it, e.g. `python -m venv %USERPROFILE%\.venvs\whoshouldidraft`, so thousands of package files aren't synced.
 
+## Data
+
+```bash
+python -m src.ingest.player_stats     # weekly player stats, 2020+
+python -m src.ingest.schedules        # schedules, Vegas lines, weather + line snapshot
+python -m src.ingest.crosscheck       # verify stats against play-by-play
+```
+
+**Line snapshots:** Vegas lines for upcoming games are appended to `data/raw/schedules/line_snapshots.parquet` with a timestamp (only when a line changes). On Windows, `scripts/register_snapshot_task.ps1` schedules this daily at 9 AM plus before the Thursday/Sunday/Monday game slots; output goes to `logs/line_snapshots.log`.
+
 ## Layout
 
 | Path | Module |

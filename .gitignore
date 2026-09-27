@@ -13,6 +13,9 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
+# Logs
+logs/
+
 # Model artifacts
 models/*.pkl
 models/*.joblib
