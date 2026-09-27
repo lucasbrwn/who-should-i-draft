@@ -8,6 +8,7 @@ from pathlib import Path
 
 from flask import Flask, abort, flash, redirect, render_template, request, url_for
 
+from app.lines import upcoming_lines
 from src.scoring.config import (
     LEAGUES_DIR, PLANNED_TYPES, PRESETS, SUPPORTED_TYPES, League, LeagueConfig, Roster, Scoring,
     list_leagues, load_league, save_league, slugify,
@@ -59,9 +60,16 @@ def parse_form(form) -> tuple[LeagueConfig, list[str]]:
     return config, errors + config.validate()
 
 
-def create_app(leagues_dir: Path = LEAGUES_DIR) -> Flask:
+def create_app(leagues_dir: Path = LEAGUES_DIR, lines_provider=upcoming_lines) -> Flask:
     app = Flask(__name__)
     app.secret_key = "local-dev-only"
+
+    @app.context_processor
+    def scoreboard():
+        try:
+            return {"lines": lines_provider()}
+        except Exception:  # the strip is decoration; never break a page over it
+            return {"lines": []}
 
     def render_form(config, slug=None, errors=(), raw=None, status=200):
         return render_template(

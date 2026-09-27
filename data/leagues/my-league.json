@@ -1,0 +1,38 @@
+{
+  "league": {
+    "name": "My League",
+    "type": "redraft",
+    "teams": 12
+  },
+  "roster": {
+    "QB": 1,
+    "RB": 2,
+    "WR": 2,
+    "TE": 1,
+    "FLEX": 1,
+    "SUPERFLEX": 0,
+    "K": 1,
+    "DST": 1,
+    "IDP": 0,
+    "BENCH": 7
+  },
+  "scoring": {
+    "passing_yards": 0.04,
+    "passing_tds": 4.0,
+    "passing_interceptions": -2.0,
+    "passing_2pt_conversions": 2.0,
+    "bonus_pass_300": 0.0,
+    "rushing_yards": 0.1,
+    "rushing_tds": 6.0,
+    "rushing_2pt_conversions": 2.0,
+    "bonus_rush_100": 0.0,
+    "receptions": 1.0,
+    "te_reception_bonus": 0.0,
+    "receiving_yards": 0.1,
+    "receiving_tds": 6.0,
+    "receiving_2pt_conversions": 2.0,
+    "bonus_rec_100": 0.0,
+    "fumbles_lost": -2.0,
+    "special_teams_tds": 6.0
+  }
+}

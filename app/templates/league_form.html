@@ -10,7 +10,7 @@
 
 {% block title %}{{ config.league.name }} · League settings{% endblock %}
 {% block content %}
-<h1>{{ "Edit league" if slug else "New league" }}</h1>
+<h1 class="section-title">{{ "Edit league" if slug else "New league" }}</h1>
 
 {% if errors %}
 <div class="errors" role="alert">
@@ -72,7 +72,7 @@
       <button type="button" class="chip" data-pass-td="6">6 pts</button>
     </div>
     {% for group, items in sections.scoring.items() %}
-      <h3>{{ group }}</h3>
+      <h3 class="group-title">{{ group }}</h3>
       <div class="grid">
         {% for item in items %}{{ number(item) }}{% endfor %}
       </div>

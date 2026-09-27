@@ -19,7 +19,7 @@ def form_for(config, **overrides):
 
 @pytest.fixture
 def client(tmp_path):
-    app = create_app(leagues_dir=tmp_path)
+    app = create_app(leagues_dir=tmp_path, lines_provider=lambda: [])
     app.config["TESTING"] = True
     return app.test_client(), tmp_path
 
@@ -72,6 +72,17 @@ def test_planned_fields_are_hidden_and_keep_defaults(client):
     assert "roster.IDP" not in form
     assert c.post("/leagues/save", data=form).status_code == 302
     assert load_league(leagues / "no-idp.json").roster.IDP == 0
+
+
+def test_scoreboard_shows_lines_and_survives_errors(tmp_path):
+    game = {"week": 4, "away": "NE", "home": "BUF", "favorite": "BUF -5.5", "total": "49.5", "kickoff": "SUN 1:00 PM ET"}
+    page = create_app(tmp_path, lines_provider=lambda: [game]).test_client().get("/").get_data(as_text=True)
+    assert "Week 4" in page and "BUF -5.5 · O/U 49.5" in page
+
+    def broken():
+        raise OSError("snapshot unreadable")
+    resp = create_app(tmp_path, lines_provider=broken).test_client().get("/")
+    assert resp.status_code == 200 and "scoreboard" not in resp.get_data(as_text=True)
 
 
 def test_delete(client):

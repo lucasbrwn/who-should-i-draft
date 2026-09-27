@@ -1,13 +1,33 @@
 {% extends "base.html" %}
+
+{% block hero %}
+<section class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Data over hype</p>
+    <h1 class="hero-title">Draft smarter.<br><span>Win your league.</span></h1>
+    <p class="hero-copy">Projections built from real stats, usage, and matchups, tuned to your league's exact scoring and roster settings.</p>
+    <div class="hero-actions">
+      <a class="button primary large" href="{{ url_for('new_league') }}">Create a league</a>
+      {% if leagues %}<a class="button outline large" href="#your-leagues">Your leagues</a>{% endif %}
+    </div>
+    <ul class="hero-facts">
+      <li><strong>2020+</strong> NFL seasons</li>
+      <li><strong>Any</strong> scoring format</li>
+      <li><strong>Live</strong> Vegas lines</li>
+    </ul>
+  </div>
+</section>
+{% endblock %}
+
 {% block content %}
-<section>
-  <h1>Your leagues</h1>
+<section id="your-leagues">
+  <h2 class="section-title">Your leagues</h2>
   {% if leagues %}
     <ul class="cards">
       {% for slug, config in leagues.items() %}
       <li class="card">
         <div>
-          <h2>{{ config.league.name }}</h2>
+          <h3 class="card-title">{{ config.league.name }}</h3>
           <p class="muted">{{ config.summary() }}</p>
           <p class="muted small">{{ config.roster.starters }} starters · {{ config.roster.size }}-man roster</p>
         </div>
@@ -27,13 +47,14 @@
 </section>
 
 <section>
-  <h1>New league</h1>
+  <h2 class="section-title">Start from a preset</h2>
   <ul class="cards presets">
     {% for key, preset in presets.items() %}
     <li>
       <a class="card link" href="{{ url_for('new_league', preset=key) }}">
-        <h2>{{ preset.league.name }}</h2>
+        <h3 class="card-title">{{ preset.league.name }}</h3>
         <p class="muted">{{ preset.summary() }}</p>
+        <span class="card-cta">Use preset →</span>
       </a>
     </li>
     {% endfor %}
