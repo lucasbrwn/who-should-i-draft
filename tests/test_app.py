@@ -7,10 +7,11 @@ from src.scoring.config import PRESETS, League, Roster, Scoring, load_league
 
 
 def form_for(config, **overrides):
+    """What a browser submits: every enabled field. Planned (disabled) fields are never sent."""
     data = {"league.name": config.league.name, "league.type": config.league.type}
     for part_name, part_cls in (("league", League), ("roster", Roster), ("scoring", Scoring)):
         for f in fields(part_cls):
-            if "min" in f.metadata:
+            if "min" in f.metadata and not f.metadata["planned"]:
                 data[f"{part_name}.{f.name}"] = str(getattr(getattr(config, part_name), f.name))
     data.update(overrides)
     return data
@@ -59,6 +60,19 @@ def test_invalid_form_shows_errors_and_keeps_input(client):
     assert "QB must be between 0 and 4." in page
     assert 'value="abc"' in page
     assert not list(leagues.glob("*.json"))
+
+
+def test_planned_fields_are_disabled_and_not_required(client):
+    c, leagues = client
+    page = c.get("/leagues/new").get_data(as_text=True)
+    assert 'name="roster.IDP" value="0"' in page
+    idp_input = page.split('name="roster.IDP"')[1].split(">")[0]
+    assert "disabled" in idp_input and "required" not in idp_input
+
+    form = form_for(PRESETS["standard-ppr"], **{"league.name": "No IDP"})
+    assert "roster.IDP" not in form
+    assert c.post("/leagues/save", data=form).status_code == 302
+    assert load_league(leagues / "no-idp.json").roster.IDP == 0
 
 
 def test_delete(client):

@@ -33,9 +33,11 @@ SLOT_ELIGIBILITY = {
 }
 
 
-def setting(default, label, lo, hi, step=1, group=None, help=""):
+def setting(default, label, lo, hi, step=1, group=None, help="", planned=False):
+    """`planned` settings are shown greyed out in the menu and can't be changed yet."""
     return field(default=default, metadata={
         "label": label, "min": lo, "max": hi, "step": step, "group": group, "help": help,
+        "planned": planned,
     })
 
 
@@ -56,7 +58,8 @@ class Roster:
     SUPERFLEX: int = setting(0, "Superflex", 0, 3, help="QB / RB / WR / TE")
     K: int = setting(1, "Kicker", 0, 2)
     DST: int = setting(1, "Defense / ST", 0, 2)
-    IDP: int = setting(0, "IDP", 0, 0, help="Individual defensive players: planned for a later version")
+    IDP: int = setting(0, "IDP", 0, 0, planned=True,
+                       help="Individual defensive players (coming in a later version)")
     BENCH: int = setting(6, "Bench", 0, 30)
 
     @property

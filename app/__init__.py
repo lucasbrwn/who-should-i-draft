@@ -37,14 +37,15 @@ def form_sections(config: LeagueConfig, raw: dict | None = None) -> dict:
 
 def parse_form(form) -> tuple[LeagueConfig, list[str]]:
     """Build a config from submitted form fields. Unparseable numbers become errors and fall back
-    to the default so the rest of the form can still be validated."""
+    to the default so the rest of the form can still be validated. Planned settings are disabled
+    in the menu (browsers don't submit disabled fields), so they always keep their default."""
     errors, data = [], {"league": {}, "roster": {}, "scoring": {}}
     data["league"]["name"] = form.get("league.name", "").strip()
     data["league"]["type"] = form.get("league.type", "redraft")
 
     for part_name, part_cls in PARTS:
         for f in fields(part_cls):
-            if "min" not in f.metadata:
+            if "min" not in f.metadata or f.metadata["planned"]:
                 continue
             text = form.get(f"{part_name}.{f.name}", "").strip()
             number = float if part_name == "scoring" else int

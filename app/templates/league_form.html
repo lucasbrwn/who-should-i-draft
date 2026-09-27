@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% macro number(item, disabled=False) -%}
-  <label class="field{% if disabled %} disabled{% endif %}">
+{% macro number(item) -%}
+  <label class="field{% if item.planned %} disabled{% endif %}">
     <span class="label">{{ item.label }}</span>
     <input type="number" name="{{ item.key }}" value="{{ item.value }}"
            min="{{ item.min }}" max="{{ item.max }}" step="{{ item.step }}"
-           {% if disabled %}disabled{% endif %} required>
+           {% if item.planned %}disabled{% else %}required{% endif %}>
     {% if item.help %}<span class="help">{{ item.help }}</span>{% endif %}
   </label>
 {%- endmacro %}
@@ -57,9 +57,7 @@
   <fieldset>
     <legend>Roster <span class="muted small" id="roster-total"></span></legend>
     <div class="grid roster">
-      {% for item in sections.roster %}
-        {{ number(item, disabled=(item.key == 'roster.IDP')) }}
-      {% endfor %}
+      {% for item in sections.roster %}{{ number(item) }}{% endfor %}
     </div>
   </fieldset>
 
