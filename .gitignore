@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data (rebuilt by the ingest pipeline; never committed)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Model artifacts
+models/*.pkl
+models/*.joblib
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+~$*
+
+# Secrets
+.env

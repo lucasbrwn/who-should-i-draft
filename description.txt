@@ -1,0 +1,36 @@
+Team 5:
+
+ 
+
+Title: Who Should I Draft?
+
+Team:
+
+Lucas Brown
+
+Project Description:
+
+This app makes educated guesses using real athlete statistics, matchups, and other factors to better predict who you should have on your fantasy team. This relies on probability of success rather than luck and projects how players will perform in the next match. Using AI, this will navigate through data and make real-time decisions rather than static outcomes. 
+
+ 
+
+Goal:
+
+Make correct predictions with pattern recognition in data.
+
+
+Language:
+
+Python
+HTML (possible frontend)
+
+
+IDE: VS
+
+ 
+
+Slides
+
+ 
+
+Github
