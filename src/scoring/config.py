@@ -34,7 +34,7 @@ SLOT_ELIGIBILITY = {
 
 
 def setting(default, label, lo, hi, step=1, group=None, help="", planned=False):
-    """`planned` settings are shown greyed out in the menu and can't be changed yet."""
+    """`planned` settings are hidden from the menu and keep their default until supported."""
     return field(default=default, metadata={
         "label": label, "min": lo, "max": hi, "step": step, "group": group, "help": help,
         "planned": planned,

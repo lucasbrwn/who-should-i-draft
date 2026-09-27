@@ -62,12 +62,11 @@ def test_invalid_form_shows_errors_and_keeps_input(client):
     assert not list(leagues.glob("*.json"))
 
 
-def test_planned_fields_are_disabled_and_not_required(client):
+def test_planned_fields_are_hidden_and_keep_defaults(client):
     c, leagues = client
     page = c.get("/leagues/new").get_data(as_text=True)
-    assert 'name="roster.IDP" value="0"' in page
-    idp_input = page.split('name="roster.IDP"')[1].split(">")[0]
-    assert "disabled" in idp_input and "required" not in idp_input
+    assert "roster.IDP" not in page
+    assert "IDP" not in page
 
     form = form_for(PRESETS["standard-ppr"], **{"league.name": "No IDP"})
     assert "roster.IDP" not in form

@@ -17,7 +17,8 @@ PARTS = (("league", League), ("roster", Roster), ("scoring", Scoring))
 
 
 def form_sections(config: LeagueConfig, raw: dict | None = None) -> dict:
-    """Group every numeric setting for the template. `raw` holds submitted text to redisplay on error."""
+    """Group every numeric setting for the template. `raw` holds submitted text to redisplay on error.
+    Planned settings are left out of the menu until they're supported."""
     raw = raw or {}
 
     def info(part_name, f):
@@ -30,15 +31,15 @@ def form_sections(config: LeagueConfig, raw: dict | None = None) -> dict:
         scoring_groups.setdefault(f.metadata["group"], []).append(info("scoring", f))
     return {
         "teams": info("league", next(f for f in fields(League) if f.name == "teams")),
-        "roster": [info("roster", f) for f in fields(Roster)],
+        "roster": [info("roster", f) for f in fields(Roster) if not f.metadata["planned"]],
         "scoring": scoring_groups,
     }
 
 
 def parse_form(form) -> tuple[LeagueConfig, list[str]]:
     """Build a config from submitted form fields. Unparseable numbers become errors and fall back
-    to the default so the rest of the form can still be validated. Planned settings are disabled
-    in the menu (browsers don't submit disabled fields), so they always keep their default."""
+    to the default so the rest of the form can still be validated. Planned settings aren't in the
+    menu, so they always keep their default."""
     errors, data = [], {"league": {}, "roster": {}, "scoring": {}}
     data["league"]["name"] = form.get("league.name", "").strip()
     data["league"]["type"] = form.get("league.type", "redraft")

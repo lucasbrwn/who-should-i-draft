@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% macro number(item) -%}
-  <label class="field{% if item.planned %} disabled{% endif %}">
+  <label class="field">
     <span class="label">{{ item.label }}</span>
     <input type="number" name="{{ item.key }}" value="{{ item.value }}"
-           min="{{ item.min }}" max="{{ item.max }}" step="{{ item.step }}"
-           {% if item.planned %}disabled{% else %}required{% endif %}>
+           min="{{ item.min }}" max="{{ item.max }}" step="{{ item.step }}" required>
     {% if item.help %}<span class="help">{{ item.help }}</span>{% endif %}
   </label>
 {%- endmacro %}
