@@ -97,6 +97,15 @@ def test_return_fumbles_count_as_lost():
     assert score(**moore) == -2.0
 
 
+def test_kick_return_fumble_lost_matches_espn():
+    # Will Shipley 2025 wk 16 @ WAS: 1 catch, 3 yds, fumbled a kickoff return and WAS recovered.
+    # ESPN shows 1 FUM, 1 LOST, -0.7 PPR. nflverse's fantasy_points_ppr says 1.3 (misses the fumble).
+    shipley = dict(position="RB", receptions=1, receiving_yards=3, kickoff_return_yards=66,
+                   sack_fumbles_lost=0, rushing_fumbles_lost=0, receiving_fumbles_lost=0,
+                   fumbles_total=1, fumbles_lost_total=1)
+    assert score(PRESETS["espn-ppr"].scoring, **shipley) == pytest.approx(-0.7)
+
+
 def test_return_yards_score_only_when_the_league_turns_them_on():
     # Britain Covey 2025 wk 14: 54 punt + 103 kick return yards, 0 fantasy points by default
     covey = dict(punt_return_yards=54, kickoff_return_yards=103)
