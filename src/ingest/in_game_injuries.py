@@ -93,12 +93,19 @@ def per_player_game(matched: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def ingest(seasons: list[int]) -> None:
+def download_rosters(seasons: list[int]) -> None:
     ROSTERS_DIR.mkdir(parents=True, exist_ok=True)
+    for season in seasons:
+        nflreadpy.load_rosters_weekly([season]).write_parquet(rosters_path(season))
+        print(f"{season}: weekly rosters -> {rosters_path(season)}")
+
+
+def ingest(seasons: list[int], download: bool = True) -> None:
+    if download:
+        download_rosters(seasons)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for season in seasons:
-        rosters = nflreadpy.load_rosters_weekly([season])
-        rosters.write_parquet(rosters_path(season))
+        rosters = pl.read_parquet(rosters_path(season))
         pbp = pl.read_parquet(PBP_DIR / f"pbp_{season}.parquet",
                               columns=["game_id", "play_id", "season", "week", "qtr", "desc"])
         matched = match_players(parse_mentions(pbp), rosters)
