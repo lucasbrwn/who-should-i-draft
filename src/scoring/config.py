@@ -92,6 +92,8 @@ class Scoring:
     bonus_rec_100: float = setting(0.0, "Bonus: 100+ receiving yds", 0, 10, 0.5, "Receiving")
 
     fumbles_lost: float = setting(-2.0, "Fumble lost", -10, 0, 0.5, "Other")
+    fumbles: float = setting(0.0, "Fumble (any, even if recovered)", -10, 0, 0.5, "Other",
+                             "Some platforms (e.g. Sleeper's default) take -1 for every fumble")
     special_teams_tds: float = setting(6.0, "Return / special teams TD", 0, 12, 0.5, "Other")
 
 
