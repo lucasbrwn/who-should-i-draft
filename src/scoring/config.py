@@ -95,6 +95,8 @@ class Scoring:
     fumbles: float = setting(0.0, "Fumble (any, even if recovered)", -10, 0, 0.5, "Other",
                              "Some platforms (e.g. Sleeper's default) take -1 for every fumble")
     special_teams_tds: float = setting(6.0, "Return / special teams TD", 0, 12, 0.5, "Other")
+    punt_return_yards: float = setting(0.0, "Points per punt return yard", 0, 1, 0.01, "Other", "0.04 = 1 pt per 25 yds")
+    kickoff_return_yards: float = setting(0.0, "Points per kick return yard", 0, 1, 0.01, "Other", "0.04 = 1 pt per 25 yds")
 
 
 @dataclass
@@ -179,6 +181,11 @@ def _preset(name, league_type="redraft", roster=None, scoring=None, teams=12) ->
 
 PRESETS: dict[str, LeagueConfig] = {
     "standard-ppr": _preset("Standard PPR"),
+    # Platform defaults (scoring only; rosters use our standard lineup). ESPN's PPR scoring is the
+    # same as Standard PPR. Sleeper's takes -1 per interception, confirmed on 1,898 player-weeks
+    # (docs/research/scoring_validation.md).
+    "espn-ppr": _preset("ESPN PPR (default)"),
+    "sleeper-ppr": _preset("Sleeper PPR (default)", scoring={"passing_interceptions": -1.0}),
     "half-ppr": _preset("Half-PPR", scoring={"receptions": 0.5}),
     "standard": _preset("Standard (no PPR)", scoring={"receptions": 0.0}),
     "superflex-half-ppr": _preset(

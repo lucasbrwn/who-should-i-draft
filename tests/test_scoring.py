@@ -97,6 +97,21 @@ def test_return_fumbles_count_as_lost():
     assert score(**moore) == -2.0
 
 
+def test_return_yards_score_only_when_the_league_turns_them_on():
+    # Britain Covey 2025 wk 14: 54 punt + 103 kick return yards, 0 fantasy points by default
+    covey = dict(punt_return_yards=54, kickoff_return_yards=103)
+    assert score(**covey) == 0.0
+    returns = replace(PPR, punt_return_yards=0.04, kickoff_return_yards=0.04)   # 1 pt per 25 yds
+    assert score(returns, **covey) == pytest.approx(157 * 0.04)
+
+
+def test_platform_presets():
+    assert PRESETS["espn-ppr"].scoring == PRESETS["standard-ppr"].scoring
+    sleeper = PRESETS["sleeper-ppr"].scoring
+    assert sleeper.passing_interceptions == -1.0
+    assert replace(sleeper, passing_interceptions=-2.0) == PRESETS["standard-ppr"].scoring
+
+
 def test_recovered_fumbles_cost_nothing_by_default():
     # 2 fumbles, offense recovered 1: only the lost one counts (Lucas's leagues)
     assert score(rushing_fumbles=2, rushing_fumbles_lost=1) == -2.0

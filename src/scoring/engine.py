@@ -20,7 +20,7 @@ PER_UNIT = [
     "passing_yards", "passing_tds", "passing_interceptions", "passing_2pt_conversions",
     "rushing_yards", "rushing_tds", "rushing_2pt_conversions",
     "receptions", "receiving_yards", "receiving_tds", "receiving_2pt_conversions",
-    "special_teams_tds",
+    "special_teams_tds", "punt_return_yards", "kickoff_return_yards",
 ]
 
 # Fumbles: use a total column when the table has one, else add up the scrimmage parts.

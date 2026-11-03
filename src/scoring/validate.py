@@ -27,13 +27,13 @@ SLEEPER_URL = "https://api.sleeper.app/v1/stats/nfl/regular/{season}/{week}"
 # Skips 2022 weeks 1-3, where Sleeper's stored points are inconsistent (docs/research/scoring_validation.md).
 DEFAULT_WEEKS = ["2022-4", "2022-10", "2023-1", "2023-12", "2024-5", "2024-17", "2025-9"]
 
-# Sleeper's default scoring differs from nflverse and our presets: -1 per interception (not -2).
+# Sleeper's default scoring (the sleeper-ppr preset) at each reception value.
 # (Recovered fumbles are NOT penalized: 25 sampled player-weeks with fumbles match without it.)
-SLEEPER_DIFFS = {"passing_interceptions": -1.0}
+SLEEPER = PRESETS["sleeper-ppr"].scoring
 SLEEPER_SCORING = {
-    "pts_ppr": replace(PRESETS["standard-ppr"].scoring, **SLEEPER_DIFFS),
-    "pts_half_ppr": replace(PRESETS["half-ppr"].scoring, **SLEEPER_DIFFS),
-    "pts_std": replace(PRESETS["standard"].scoring, **SLEEPER_DIFFS),
+    "pts_ppr": SLEEPER,
+    "pts_half_ppr": replace(SLEEPER, receptions=0.5),
+    "pts_std": replace(SLEEPER, receptions=0.0),
 }
 
 
