@@ -11,7 +11,9 @@ Order matters: snap counts need player stats (to link IDs), and in-game injuries
 import argparse
 import time
 
-from src.ingest import availability, in_game_injuries, pbp, player_stats, player_weeks, schedules
+from src.ingest import (
+    availability, ff_opportunity, in_game_injuries, pbp, player_stats, player_weeks, schedules,
+)
 
 DOWNLOADS = [
     ("weekly player stats", player_stats.ingest),
@@ -19,6 +21,7 @@ DOWNLOADS = [
     ("snap counts + injury reports", availability.ingest),
     ("play-by-play", pbp.ingest),
     ("weekly rosters", in_game_injuries.download_rosters),
+    ("expected fantasy points", ff_opportunity.ingest),
 ]
 
 

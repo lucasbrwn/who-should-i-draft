@@ -20,6 +20,16 @@ Decided by Claude, with the recommended option. Reverse any of these:
 | 5 | Shared jersey numbers resolved by the abbreviated name; if still ambiguous, leave unmatched | Guess | Only 10 of ~6,000 mentions end up unmatched |
 | 6 | `python -m src.ingest` always rebuilds the table across **all** seasons, even with `--seasons 2026` | Rebuild only that season | The table is small (seconds to build) and the "previous 5 games" baseline crosses seasons |
 
+## SCRUM-46: expected fantasy points (built, needs your OK)
+
+| # | Decision | Why |
+|---|---|---|
+| 7 | Saved all ~180 columns raw, but joined only the player's `*_exp` columns into player_weeks (117 columns total) | `*_diff` = actual − expected, recomputable; `*_team` totals belong with team features (SCRUM-35) |
+| 8 | Snap-only games get expected = 0 | No target or carry means nothing was expected, a real 0 |
+| 9 | Slightly negative expected points are allowed (check only fires below −2) | All 121 negatives were backup QBs kneeling (−0.3 at worst) |
+
+Coverage: every one of 33,213 player-games with a target or carry has expected points; catches match our table on 99.99% of rows.
+
 ## Known limitation
 
 The flag misses injuries the play text doesn't mention, e.g. **Joe Burrow 2023 Wk 11** (44% of snaps, wrist, no "injured" in the text). "Snap drop + Out the next week + new injury on the report" could catch these, but snap drops alone are mostly benchings, so I didn't add it without asking. Your call.

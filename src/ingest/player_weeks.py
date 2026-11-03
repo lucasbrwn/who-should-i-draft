@@ -16,6 +16,7 @@ from pathlib import Path
 
 import polars as pl
 
+from src.ingest.ff_opportunity import read_ff_opportunity
 from src.ingest.in_game_injuries import read_in_game_injuries
 from src.ingest.player_stats import default_seasons, read_player_stats
 
@@ -97,9 +98,25 @@ def attach_in_game_injuries(rows: pl.DataFrame, in_game: pl.DataFrame) -> pl.Dat
     return rows.with_columns(((pl.col("injury_mentions") > 0) & short_day).alias("left_injured"))
 
 
+def expected_columns(opportunity: pl.DataFrame) -> list[str]:
+    """The player's own expected stats (e.g. rec_touchdown_exp). Skips *_diff (= actual - expected,
+    easy to recompute) and *_team (team totals belong with team-context features)."""
+    return [c for c in opportunity.columns if c.endswith("_exp")]
+
+
+def attach_expected_points(rows: pl.DataFrame, opportunity: pl.DataFrame) -> pl.DataFrame:
+    cols = expected_columns(opportunity)
+    exp = opportunity.select("player_id", "game_id", *cols).unique(["player_id", "game_id"])
+    # no target/carry/pass that game -> nothing was expected, a real 0
+    return rows.join(exp, on=["player_id", "game_id"], how="left").with_columns(
+        [pl.col(c).fill_null(0.0) for c in cols]
+    )
+
+
 def build_player_weeks(stats: pl.DataFrame, snaps: pl.DataFrame, schedules: pl.DataFrame,
-                       injuries: pl.DataFrame | None = None, in_game: pl.DataFrame | None = None) -> pl.DataFrame:
-    """injuries / in_game are optional so the base table can be tested on its own."""
+                       injuries: pl.DataFrame | None = None, in_game: pl.DataFrame | None = None,
+                       opportunity: pl.DataFrame | None = None) -> pl.DataFrame:
+    """injuries / in_game / opportunity are optional so the base table can be tested on its own."""
     stat_cols = stat_columns(stats)
     reg_stats = stats.filter(pl.col("season_type") == "REG")
     positions = player_positions(stats)
@@ -151,6 +168,9 @@ def build_player_weeks(stats: pl.DataFrame, snaps: pl.DataFrame, schedules: pl.D
     if in_game is not None:
         rows = attach_in_game_injuries(rows, in_game)
         extra += IN_GAME_COLS
+    if opportunity is not None:
+        rows = attach_expected_points(rows, opportunity)
+        extra += expected_columns(opportunity)
     return (
         rows.select(*ID_COLS, "gameday", "is_home", "snaps_only", *SNAP_COLS, *extra, *stat_cols)
         .sort("season", "week", "team", "player_id")
@@ -184,6 +204,7 @@ def build(seasons: list[int]) -> pl.DataFrame:
         read_dir(SCHEDULES_DIR, "schedules", seasons),
         injuries=read_dir(INJURIES_DIR, "injuries", seasons),
         in_game=read_in_game_injuries(seasons),
+        opportunity=read_ff_opportunity(seasons),
     )
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.write_parquet(OUT_PATH)

@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `python scripts/report_player_weeks.py` from `data/processed/player_weeks.parquet`.
 
-**42,832 player-weeks**, 94 columns, seasons 2020–2026. Checks: all passed.
+**42,832 player-weeks**, 117 columns, seasons 2020–2026. Checks: all passed.
 
 ## Rows by season and position
 
@@ -65,3 +65,27 @@ Groups 2 and 3 are why the flag needs *both* signals: injury text alone includes
 | 2024 | 45 | 201 |
 | 2025 | 48 | 227 |
 | 2026 | 34 | 106 |
+
+## Touchdown luck, 2025 (RB/WR/TE)
+
+Expected TDs come from where each target/carry happened (nflverse ff_opportunity). Research says future TDs follow expected TDs more than actual ones, so big gaps tend to shrink.
+
+**Luckiest**
+
+| player | position | expected TD | actual TD | luck |
+|---|---|---|---|---|
+| Jahmyr Gibbs | RB | 10.7 | 18 | 7.3 |
+| Dallas Goedert | TE | 5.5 | 11 | 5.5 |
+| De'Von Achane | RB | 6.6 | 12 | 5.4 |
+| Tee Higgins | WR | 6.4 | 11 | 4.6 |
+| Jonathan Taylor | RB | 15.4 | 20 | 4.6 |
+
+**Unluckiest**
+
+| player | position | expected TD | actual TD | luck |
+|---|---|---|---|---|
+| Justin Jefferson | WR | 8.6 | 2 | -6.6 |
+| CeeDee Lamb | WR | 7.8 | 3 | -4.8 |
+| Christian McCaffrey | RB | 21.0 | 17 | -4.0 |
+| Taysom Hill | TE | 5.0 | 1 | -4.0 |
+| Tyler Warren | TE | 8.6 | 5 | -3.6 |

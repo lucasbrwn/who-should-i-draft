@@ -121,6 +121,20 @@ def main() -> None:
                                            (pl.col("injury_mentions") > 0).sum().alias("injury in play text")).sort("season")
     lines += [table(per_season), ""]
 
+    last_full = df.filter(pl.col("week") >= 17)["season"].max()
+    luck = (
+        df.filter((pl.col("season") == last_full) & (pl.col("position") != "QB"))
+        .group_by(pl.col("player_display_name").alias("player"), "position")
+        .agg(pl.col("total_touchdown_exp").sum().round(1).alias("expected TD"),
+             (pl.col("rushing_tds") + pl.col("receiving_tds")).sum().alias("actual TD"))
+        .with_columns((pl.col("actual TD") - pl.col("expected TD")).round(1).alias("luck"))
+    )
+    lines += [f"## Touchdown luck, {last_full} (RB/WR/TE)", "",
+              "Expected TDs come from where each target/carry happened (nflverse ff_opportunity). "
+              "Research says future TDs follow expected TDs more than actual ones, so big gaps tend to shrink.", "",
+              "**Luckiest**", "", table(luck.sort("luck", descending=True).head(5)), "",
+              "**Unluckiest**", "", table(luck.sort("luck").head(5)), ""]
+
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text("\n".join(lines), encoding="utf-8")
     print(f"-> {REPORT}")
