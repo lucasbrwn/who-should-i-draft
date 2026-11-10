@@ -35,11 +35,25 @@ Then open http://127.0.0.1:5000. `--debug` reloads automatically when you save a
 ## Data
 
 ```bash
+python -m src.ingest                  # everything below, then data/processed/player_weeks.parquet
+python -m src.ingest --seasons 2026   # weekly refresh of the current season
+python -m src.ingest --no-download    # rebuild processed tables from raw files on disk
+```
+
+Or one source at a time:
+
+```bash
 python -m src.ingest.player_stats     # weekly player stats, 2020+
 python -m src.ingest.schedules        # schedules, Vegas lines, weather + line snapshot
 python -m src.ingest.availability     # snap counts + injury reports (run after player_stats)
+python -m src.ingest.pbp              # play-by-play + participation + FTN charting
+python -m src.ingest.in_game_injuries # weekly rosters + who got hurt mid-game (run after pbp)
+python -m src.ingest.player_weeks     # the master table (run last)
 python -m src.ingest.crosscheck       # verify stats against play-by-play
+python -m src.scoring.validate        # verify the scoring engine against nflverse + Sleeper
 ```
+
+**Player-week table:** one row per QB/RB/WR/TE per regular-season game where he took an offensive snap or recorded a stat. Zero = played and did nothing; no row = didn't play. Includes snap share, that week's injury report, and `left_injured` (hurt mid-game and played under half his usual snaps).
 
 **Line snapshots:** Vegas lines for upcoming games are appended to `data/raw/schedules/line_snapshots.parquet` with a timestamp (only when a line changes). On Windows, `scripts/register_snapshot_task.ps1` schedules this daily at 9 AM plus before the Thursday/Sunday/Monday game slots; output goes to `logs/line_snapshots.log`.
 

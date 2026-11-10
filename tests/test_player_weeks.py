@@ -91,6 +91,19 @@ def test_home_away_and_opponent():
     assert by_team["NYJ"]["opponent_team"] == "BUF"
 
 
+def test_expected_points_attach_and_snap_only_games_expect_zero():
+    opportunity = pl.DataFrame({"player_id": ["a"], "game_id": [GAME], "rec_touchdown_exp": [0.4],
+                                "rec_touchdown_diff": [0.6], "rec_attempt_team": [35.0]})
+    df = build_player_weeks(
+        pl.DataFrame([stat_row("a", targets=5)], schema_overrides={"racr": pl.Float64, "target_share": pl.Float64}),
+        pl.DataFrame([snap_row("davis")], schema=SNAP_SCHEMA), SCHEDULES, opportunity=opportunity,
+    )
+    by_id = {r["player_id"]: r for r in df.to_dicts()}
+    assert by_id["a"]["rec_touchdown_exp"] == 0.4
+    assert by_id["davis"]["rec_touchdown_exp"] == 0.0           # no opportunities -> nothing expected
+    assert "rec_touchdown_diff" not in df.columns and "rec_attempt_team" not in df.columns
+
+
 def test_check_finds_duplicates_and_missing_opponents():
     df = build([stat_row("a")], [])
     bad = pl.concat([df, df.with_columns(pl.lit(None, pl.String).alias("opponent_team"))])
