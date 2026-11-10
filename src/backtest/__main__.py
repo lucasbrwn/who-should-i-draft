@@ -12,10 +12,12 @@ import polars as pl
 
 from src.backtest.harness import compare, run, summarize, weekly_metrics
 from src.models.baseline import Baseline
+from src.models.ridge import RidgeModel
 
 FEATURES_PATH = Path("data/processed/features.parquet")
 REPORT_DIR = Path("docs/reports")
-MODELS = {"baseline": Baseline}
+MODELS = {"baseline": Baseline, "ridge": RidgeModel}
+TOP_FEATURES = 5
 
 
 def markdown(df: pl.DataFrame) -> str:
@@ -29,7 +31,8 @@ def main() -> None:
     args = parser.parse_args()
 
     feats = pl.read_parquet(FEATURES_PATH)
-    results = pl.concat([run(MODELS[name](), feats) for name in args.models])
+    models = {name: MODELS[name]() for name in args.models}
+    results = pl.concat([run(model, feats) for model in models.values()])
     weekly = weekly_metrics(results)
     summary = summarize(weekly)
 
@@ -40,6 +43,15 @@ def main() -> None:
     for other in names[1:]:
         lines += ["", f"## {other} minus {names[0]} (paired; MAE: negative = better, Spearman: positive = better)", "",
                   markdown(compare(weekly, other, names[0]))]
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    for name, model in models.items():
+        if hasattr(model, "coefficients"):
+            coefs = model.coefficients()
+            csv = REPORT_DIR / f"{name}_coefficients_{date.today()}.csv"
+            coefs.write_csv(csv)
+            top = coefs.group_by("position", "stat", maintain_order=True).head(TOP_FEATURES)
+            lines += ["", f"## {name}: top {TOP_FEATURES} features per stat (latest fit, scaled; full list in {csv.name})", "",
+                      markdown(top.with_columns(pl.col("coef").round(3)))]
     report = "\n".join(lines) + "\n"
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     path = REPORT_DIR / f"backtest_{date.today()}.md"
