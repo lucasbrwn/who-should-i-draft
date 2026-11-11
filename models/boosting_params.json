@@ -1,0 +1,146 @@
+{
+  "QB|passing_yards": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.5667346545864692,
+    "default_spearman": 0.5234590833984774
+  },
+  "QB|passing_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.5667346545864692,
+    "default_spearman": 0.5234590833984774
+  },
+  "QB|passing_interceptions": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.5667346545864692,
+    "default_spearman": 0.5234590833984774
+  },
+  "QB|rushing_yards": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.5667346545864692,
+    "default_spearman": 0.5234590833984774
+  },
+  "QB|rushing_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.5667346545864692,
+    "default_spearman": 0.5234590833984774
+  },
+  "RB|rushing_yards": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.7208184541132588,
+    "default_spearman": 0.7077888565185513
+  },
+  "RB|rushing_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.7208184541132588,
+    "default_spearman": 0.7077888565185513
+  },
+  "RB|receptions": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.7208184541132588,
+    "default_spearman": 0.7077888565185513
+  },
+  "RB|receiving_yards": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.7208184541132588,
+    "default_spearman": 0.7077888565185513
+  },
+  "RB|receiving_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "spearman": 0.7208184541132588,
+    "default_spearman": 0.7077888565185513
+  },
+  "WR|receptions": {
+    "learning_rate": 0.02662645028463024,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.6471895115742501,
+    "max_iter": 200,
+    "spearman": 0.6820765476994739,
+    "default_spearman": 0.6712015767834771
+  },
+  "WR|receiving_yards": {
+    "learning_rate": 0.02662645028463024,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.6471895115742501,
+    "max_iter": 200,
+    "spearman": 0.6820765476994739,
+    "default_spearman": 0.6712015767834771
+  },
+  "WR|receiving_tds": {
+    "learning_rate": 0.02662645028463024,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.6471895115742501,
+    "max_iter": 200,
+    "spearman": 0.6820765476994739,
+    "default_spearman": 0.6712015767834771
+  },
+  "TE|receptions": {
+    "learning_rate": 0.040857507699738796,
+    "max_leaf_nodes": 35,
+    "min_samples_leaf": 107,
+    "l2_regularization": 0.8894878343490003,
+    "max_iter": 100,
+    "spearman": 0.6339255599411648,
+    "default_spearman": 0.6219602451205781
+  },
+  "TE|receiving_yards": {
+    "learning_rate": 0.040857507699738796,
+    "max_leaf_nodes": 35,
+    "min_samples_leaf": 107,
+    "l2_regularization": 0.8894878343490003,
+    "max_iter": 100,
+    "spearman": 0.6339255599411648,
+    "default_spearman": 0.6219602451205781
+  },
+  "TE|receiving_tds": {
+    "learning_rate": 0.040857507699738796,
+    "max_leaf_nodes": 35,
+    "min_samples_leaf": 107,
+    "l2_regularization": 0.8894878343490003,
+    "max_iter": 100,
+    "spearman": 0.6339255599411648,
+    "default_spearman": 0.6219602451205781
+  }
+}
