@@ -17,7 +17,10 @@ from src.models.ridge import RidgeModel
 
 FEATURES_PATH = Path("data/processed/features.parquet")
 REPORT_DIR = Path("docs/reports")
-MODELS = {"baseline": Baseline, "ridge": RidgeModel, "boosting": BoostingModel,
+# "boosting" uses the rank-tuned settings (SCRUM-50 winner); "boosting_default" is the untuned version.
+MODELS = {"baseline": Baseline, "ridge": RidgeModel,
+          "boosting": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting"),
+          "boosting_default": BoostingModel,
           "boosting_tuned": lambda: BoostingModel(tuned=STAT_ERROR_PATH, name="boosting_tuned"),
           "boosting_td": lambda: BoostingModel(tuned=STAT_ERROR_PATH, tuned_stats=TD_STATS, name="boosting_td"),
           "boosting_rank": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_rank")}

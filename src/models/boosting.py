@@ -4,7 +4,8 @@ scikit-learn HistGradientBoostingRegressor, one per position x modeled stat (sam
     Poisson loss for counts (TDs, receptions, INTs: never predicts a negative), squared error for yards.
     Blanks are handled natively; injury report text becomes a category column.
 
-Settings are reasonable defaults; proper tuning with time-based folds is SCRUM-50.
+Settings: BoostingModel() uses the untuned defaults below. The backtest's "boosting" loads the
+rank-tuned settings from TUNED_PATH (SCRUM-50 winner, see docs/reports/2026-11-10_tuning_findings.md).
 
 Retrains every REFIT_WEEKS weeks (and at the start of each season) instead of weekly, because
 boosting is ~20x slower than Ridge. Features still update every week; only the learned patterns
@@ -50,7 +51,7 @@ class BoostingModel:
         self.tuned = json.loads(Path(path).read_text()) if path else {}
         if tuned_stats is not None:
             self.tuned = {k: v for k, v in self.tuned.items() if k.split("|")[1] in tuned_stats}
-        self.name = name or ("boosting_tuned" if path else "boosting")
+        self.name = name or ("boosting_tuned" if path else "boosting_default")
         self.baseline = Baseline()
         self.models: dict[tuple[str, str], HistGradientBoostingRegressor] = {}
         self.fitted_through: tuple[int, int] | None = None
