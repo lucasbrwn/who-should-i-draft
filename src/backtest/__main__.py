@@ -12,11 +12,12 @@ import polars as pl
 
 from src.backtest.harness import compare, run, summarize, weekly_metrics
 from src.models.baseline import Baseline
+from src.models.boosting import BoostingModel
 from src.models.ridge import RidgeModel
 
 FEATURES_PATH = Path("data/processed/features.parquet")
 REPORT_DIR = Path("docs/reports")
-MODELS = {"baseline": Baseline, "ridge": RidgeModel}
+MODELS = {"baseline": Baseline, "ridge": RidgeModel, "boosting": BoostingModel}
 TOP_FEATURES = 5
 
 
@@ -40,9 +41,10 @@ def main() -> None:
              "Walk-forward over 2021-2024 (2025 untouched). Standard PPR. Values: mean [95% CI over weeks].", "",
              markdown(summary)]
     names = args.models
-    for other in names[1:]:
-        lines += ["", f"## {other} minus {names[0]} (paired; MAE: negative = better, Spearman: positive = better)", "",
-                  markdown(compare(weekly, other, names[0]))]
+    for i, older in enumerate(names):  # every later model vs every earlier one
+        for newer in names[i + 1:]:
+            lines += ["", f"## {newer} minus {older} (paired; MAE: negative = better, Spearman: positive = better)", "",
+                      markdown(compare(weekly, newer, older))]
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     for name, model in models.items():
         if hasattr(model, "coefficients"):
