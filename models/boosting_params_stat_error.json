@@ -1,0 +1,146 @@
+{
+  "QB|passing_yards": {
+    "learning_rate": 0.02288748277537199,
+    "max_leaf_nodes": 57,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.15027946689483906,
+    "max_iter": 200,
+    "score": 63.94509919071031,
+    "default_score": 65.48250617666739
+  },
+  "QB|passing_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 1.0136468801846752,
+    "default_score": 1.1387931715388784
+  },
+  "QB|passing_interceptions": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 1.122782810624128,
+    "default_score": 1.3167702722434849
+  },
+  "QB|rushing_yards": {
+    "learning_rate": 0.02662645028463024,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.6471895115742501,
+    "max_iter": 200,
+    "score": 11.588962896373642,
+    "default_score": 12.245520286017566
+  },
+  "QB|rushing_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 0.5753223541541568,
+    "default_score": 0.9600812832985826
+  },
+  "RB|rushing_yards": {
+    "learning_rate": 0.02288748277537199,
+    "max_leaf_nodes": 57,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.15027946689483906,
+    "max_iter": 200,
+    "score": 18.850510546836496,
+    "default_score": 19.310640831801052
+  },
+  "RB|rushing_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 0.6073244648122027,
+    "default_score": 0.7768705964362372
+  },
+  "RB|receptions": {
+    "learning_rate": 0.02662645028463024,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.6471895115742501,
+    "max_iter": 200,
+    "score": 1.4833792140346813,
+    "default_score": 1.61090231303056
+  },
+  "RB|receiving_yards": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 10.140736205394697,
+    "default_score": 10.644852640474063
+  },
+  "RB|receiving_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 0.3138099552286695,
+    "default_score": 0.5617148638821816
+  },
+  "WR|receptions": {
+    "learning_rate": 0.02662645028463024,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.6471895115742501,
+    "max_iter": 200,
+    "score": 1.4885771662752045,
+    "default_score": 1.5674278587355068
+  },
+  "WR|receiving_yards": {
+    "learning_rate": 0.02662645028463024,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 141,
+    "l2_regularization": 0.6471895115742501,
+    "max_iter": 200,
+    "score": 20.081458961528845,
+    "default_score": 20.484473380046083
+  },
+  "WR|receiving_tds": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 0.5693122573849154,
+    "default_score": 0.6528054076303436
+  },
+  "TE|receptions": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 1.3498449856038972,
+    "default_score": 1.4928541620441522
+  },
+  "TE|receiving_yards": {
+    "learning_rate": 0.05076703919572965,
+    "max_leaf_nodes": 17,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.0907530456191219,
+    "max_iter": 100,
+    "score": 12.452552233779011,
+    "default_score": 13.094435111096072
+  },
+  "TE|receiving_tds": {
+    "learning_rate": 0.040857507699738796,
+    "max_leaf_nodes": 35,
+    "min_samples_leaf": 107,
+    "l2_regularization": 0.8894878343490003,
+    "max_iter": 100,
+    "score": 0.48595854954266987,
+    "default_score": 0.7171665771870035
+  }
+}

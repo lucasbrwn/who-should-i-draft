@@ -11,6 +11,9 @@ boosting is ~20x slower than Ridge. Features still update every week; only the l
 refresh monthly. Rare stats come from the baseline, which does update weekly.
 """
 
+import json
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -23,14 +26,31 @@ from src.models.ridge import COUNT_STATS, MODELED
 REFIT_WEEKS = 4
 PARAMS = dict(learning_rate=0.05, max_iter=300, max_leaf_nodes=31, min_samples_leaf=50,
               l2_regularization=0.1, early_stopping=False, random_state=0)
+TUNED_PATH = Path("models/boosting_params.json")  # written by python -m src.models.tune (SCRUM-50)
+STAT_ERROR_PATH = Path("models/boosting_params_stat_error.json")  # first tuning try (per-stat error)
+TD_STATS = {"passing_tds", "rushing_tds", "receiving_tds"}
+TUNED_KEYS = ["learning_rate", "max_iter", "max_leaf_nodes", "min_samples_leaf", "l2_regularization"]
+
+
+def usable_columns(rows: pl.DataFrame) -> list[str]:
+    """Feature columns with at least one value for these rows (e.g. rb_checkdown is all blank for QBs)."""
+    return [c for c in feature_columns(rows) if rows[c].null_count() < rows.height]
 
 
 class BoostingModel:
     name = "boosting"
 
-    def __init__(self, refit_weeks: int = REFIT_WEEKS, params: dict | None = None):
+    def __init__(self, refit_weeks: int = REFIT_WEEKS, params: dict | None = None, tuned: bool | Path = False,
+                 tuned_stats: set[str] | None = None, name: str | None = None):
+        """tuned: True loads TUNED_PATH, or pass a settings file. tuned_stats: apply tuned settings only
+        to these stats (defaults for the rest)."""
         self.refit_weeks = refit_weeks
         self.params = {**PARAMS, **(params or {})}
+        path = TUNED_PATH if tuned is True else tuned
+        self.tuned = json.loads(Path(path).read_text()) if path else {}
+        if tuned_stats is not None:
+            self.tuned = {k: v for k, v in self.tuned.items() if k.split("|")[1] in tuned_stats}
+        self.name = name or ("boosting_tuned" if path else "boosting")
         self.baseline = Baseline()
         self.models: dict[tuple[str, str], HistGradientBoostingRegressor] = {}
         self.fitted_through: tuple[int, int] | None = None
@@ -65,14 +85,15 @@ class BoostingModel:
             if rows.height < 50:
                 continue
             # Columns that are blank for every row of this position (e.g. rb_checkdown for QBs) are dropped.
-            self.columns[pos] = [c for c in feature_columns(rows) if rows[c].null_count() < rows.height]
+            self.columns[pos] = usable_columns(rows)
             x = self._x(rows, self.columns[pos])
             for stat in stats:
                 y = rows[f"y_{stat}"].to_numpy()
                 if y.sum() <= 0:  # Poisson can't fit an all-zero stat; the baseline (0) covers it
                     continue
                 loss = "poisson" if stat in COUNT_STATS else "squared_error"
-                model = HistGradientBoostingRegressor(loss=loss, categorical_features="from_dtype", **self.params)
+                tuned = {k: v for k, v in self.tuned.get(f"{pos}|{stat}", {}).items() if k in TUNED_KEYS}
+                model = HistGradientBoostingRegressor(loss=loss, categorical_features="from_dtype", **{**self.params, **tuned})
                 self.models[(pos, stat)] = model.fit(x, y)
         self.fitted_through = latest
         return self

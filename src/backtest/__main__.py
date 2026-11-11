@@ -10,14 +10,18 @@ from pathlib import Path
 
 import polars as pl
 
-from src.backtest.harness import compare, run, summarize, weekly_metrics
+from src.backtest.harness import SEASONS, compare, run, summarize, weekly_metrics
 from src.models.baseline import Baseline
-from src.models.boosting import BoostingModel
+from src.models.boosting import STAT_ERROR_PATH, TD_STATS, TUNED_PATH, BoostingModel
 from src.models.ridge import RidgeModel
 
 FEATURES_PATH = Path("data/processed/features.parquet")
 REPORT_DIR = Path("docs/reports")
-MODELS = {"baseline": Baseline, "ridge": RidgeModel, "boosting": BoostingModel}
+MODELS = {"baseline": Baseline, "ridge": RidgeModel, "boosting": BoostingModel,
+          "boosting_tuned": lambda: BoostingModel(tuned=STAT_ERROR_PATH, name="boosting_tuned"),
+          "boosting_td": lambda: BoostingModel(tuned=STAT_ERROR_PATH, tuned_stats=TD_STATS, name="boosting_td"),
+          "boosting_rank": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_rank")}
+DEFAULT_MODELS = ["baseline", "ridge", "boosting"]
 TOP_FEATURES = 5
 
 
@@ -28,17 +32,18 @@ def markdown(df: pl.DataFrame) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--models", nargs="+", default=list(MODELS), choices=list(MODELS))
+    parser.add_argument("--models", nargs="+", default=DEFAULT_MODELS, choices=list(MODELS))
+    parser.add_argument("--seasons", nargs="+", type=int, default=SEASONS)
     args = parser.parse_args()
 
     feats = pl.read_parquet(FEATURES_PATH)
     models = {name: MODELS[name]() for name in args.models}
-    results = pl.concat([run(model, feats) for model in models.values()])
+    results = pl.concat([run(model, feats, args.seasons) for model in models.values()])
     weekly = weekly_metrics(results)
     summary = summarize(weekly)
 
     lines = [f"# Backtest report ({date.today()})", "",
-             "Walk-forward over 2021-2024 (2025 untouched). Standard PPR. Values: mean [95% CI over weeks].", "",
+             f"Walk-forward over {args.seasons} (2025 untouched). Standard PPR. Values: mean [95% CI over weeks].", "",
              markdown(summary)]
     names = args.models
     for i, older in enumerate(names):  # every later model vs every earlier one
@@ -56,7 +61,7 @@ def main() -> None:
                       markdown(top.with_columns(pl.col("coef").round(3)))]
     report = "\n".join(lines) + "\n"
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    path = REPORT_DIR / f"backtest_{date.today()}.md"
+    path = REPORT_DIR / f"backtest_{date.today()}_{'-'.join(args.models)}.md"
     path.write_text(report, encoding="utf-8")
     print(report)
     print(f"Wrote {path}")
