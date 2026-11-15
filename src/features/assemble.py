@@ -17,6 +17,7 @@ from pathlib import Path
 
 import polars as pl
 
+from src.features.age import build_age_features, read_players
 from src.features.defense import PBP_COLS as DEFENSE_PBP_COLS
 from src.features.defense import build_defense_features, defense_plays, fantasy_over_expected_allowed
 from src.features.matchup import PBP_COLS as MATCHUP_PBP_COLS
@@ -62,7 +63,8 @@ def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> p
     matchup = build_matchup_features(pw, usage, defense, target_depths(pbp))  # carries the opponent's ratings
     vacated = build_vacated_features(pw)
     preseason = build_preseason_features(pw, schedules, read_win_totals())
-    return assemble(pw, [usage, team, matchup, vacated, preseason])
+    age = build_age_features(pw, read_players())
+    return assemble(pw, [usage, team, matchup, vacated, preseason, age])
 
 
 def feature_columns(feats: pl.DataFrame) -> list[str]:
