@@ -88,3 +88,13 @@ def test_preseason_rows_match_the_real_week1_rows():
             same = same | ((a - b).abs() < 1e-9)
         assert same.all(), c
     assert rows.height > both.height  # and players with no Week 1 game got rows too
+
+
+@pytest.mark.skipif(not Path("data/reference/adp/fantasypros_adp_2024.csv").exists(), reason="needs ADP files")
+def test_adp_inputs_rank_within_position_from_the_pre_draft_file():
+    from src.models.season import adp_inputs
+    a = adp_inputs([2024])
+    assert a.height > 300 and a["season"].unique().to_list() == [2024]
+    top = a.sort("adp").head(1)
+    assert top["adp_pos_rank"].item() == 1          # the overall #1 pick is #1 at his position
+    assert a["adp_pos_rank"].min() == 1 and a["player_id"].is_unique().all()
