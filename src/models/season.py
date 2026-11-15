@@ -65,6 +65,12 @@ ROW_INPUTS = ["age", "years_exp", "player_new_team", "no_games_last_season", "wi
               # offseason departures/arrivals (SCRUM-94)
               "offseason_vacated_tgt_wr", "offseason_vacated_tgt_te", "offseason_vacated_tgt_rb",
               "offseason_vacated_tgt_total", "offseason_vacated_carry", "offseason_arrived_tgt", "offseason_arrived_carry"]
+# SCRUM-93 (Lucas, 2026-11-14, triggered by the locked mock-draft rule): the market's pre-draft ADP is
+# a season-model input, so the model learns where the crowd knows more (RB roles, camp news) and
+# where our stats do. Snapshot is FantasyPros' pre-Week-1 ADP (checked frozen before the season).
+# This reverses the September "consensus is only a benchmark" rule; the claim becomes "our model adds
+# value on top of the market." USE_ADP=False reproduces the independent model.
+USE_ADP = True
 B_PARAMS = dict(learning_rate=0.05, max_iter=200, max_leaf_nodes=15, min_samples_leaf=20,
                 l2_regularization=1.0, random_state=0)
 
@@ -170,6 +176,20 @@ def week1_starters(schedules: pl.DataFrame) -> pl.DataFrame:
         .drop_nulls().unique().with_columns(week1_starter=pl.lit(1.0))
 
 
+def adp_inputs(seasons: list[int]) -> pl.DataFrame:
+    """player_id, season, adp (overall average pick), adp_pos_rank (rank within position)."""
+    from src.ingest.consensus import ADP_DIR, load_adp
+    frames = []
+    for s in seasons:
+        if not (ADP_DIR / f"fantasypros_adp_{s}.csv").exists():
+            continue
+        a = load_adp(s).drop_nulls("player_id").unique("player_id", keep="first")
+        frames.append(a.select("player_id", "adp", season=pl.lit(s))
+                      .with_columns(adp_pos_rank=pl.col("adp").rank("ordinal").over(a["position"])))
+    schema = {"player_id": pl.String, "adp": pl.Float64, "season": pl.Int32, "adp_pos_rank": pl.Float64}
+    return pl.concat(frames, how="diagonal_relaxed") if frames else pl.DataFrame(schema=schema)
+
+
 def season_dataset(a_rows: pl.DataFrame, pw: pl.DataFrame, schedules: pl.DataFrame) -> pl.DataFrame:
     """One row per board player-season: B's inputs + the target (actual season points, 0 if none)."""
     res = season_results(pw)
@@ -187,7 +207,10 @@ def season_dataset(a_rows: pl.DataFrame, pw: pl.DataFrame, schedules: pl.DataFra
             .join(res.select("player_id", "season", actual="points"), on=["player_id", "season"], how="left")
             .with_columns(pl.col("games_last", "games_2ago").fill_null(0), pl.col("week1_starter").fill_null(0.0),
                           pl.col("actual").fill_null(0.0),
-                          naive=pl.col("ppg_last").fill_null(0) * 17))
+                          naive=pl.col("ppg_last").fill_null(0) * 17)
+            .pipe(lambda d: d.join(adp_inputs(d["season"].unique().to_list())
+                                   .with_columns(pl.col("season").cast(d.schema["season"]), pl.col("adp_pos_rank").cast(pl.Float64)),
+                                   on=["player_id", "season"], how="left") if USE_ADP else d))
 
 
 def b_inputs(df: pl.DataFrame) -> list[str]:
