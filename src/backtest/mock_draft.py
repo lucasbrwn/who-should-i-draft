@@ -95,7 +95,8 @@ def run_draft(pool: Pool, ecr_rank: np.ndarray, config: LeagueConfig, slot: int,
                 pid = best_vor(d, pool, config)
                 i = pool.ids.index(pid) if pid else None
             else:
-                recs = recommend(d, pool, config, n_candidates=SIM_CANDIDATES, n_sims=SIM_SIMS, seed=seed + d.next_overall)
+                recs = recommend(d, pool, config, n_candidates=SIM_CANDIDATES, n_sims=SIM_SIMS, seed=seed + d.next_overall,
+                                 stage2_top=0, stage2_sims=0)
                 i = pool.ids.index(recs[0]["player_id"]) if recs and recs[0]["player_id"] else None
             pid, pos = (pool.ids[i], pool.pos[i]) if i is not None else (f"empty-{team}-{d.next_overall}", "WR")
         d.make_pick(pid, pid, pos if pos in ("QB", "RB", "WR", "TE", "K", "DST") else "WR")
@@ -103,14 +104,16 @@ def run_draft(pool: Pool, ecr_rank: np.ndarray, config: LeagueConfig, slot: int,
     return rosters
 
 
-def run(reps: int, config: LeagueConfig, calibrated: bool = False) -> pl.DataFrame:
+def run(reps: int, config: LeagueConfig, calibrated: bool = False, upside: bool = False,
+        seasons: list[int] | None = None) -> pl.DataFrame:
     rows = []
-    for season in SEASONS:
+    for season in seasons or SEASONS:
         board = pl.read_parquet(OUT_DIR / f"board_{season}.parquet")
         if calibrated:  # fit on earlier dev seasons only (2022 stays uncalibrated)
             board = calibration.apply(board, calibration.fit([s for s in SEASONS if s < season]))
         vb, _ = vor_board(board, config)
-        pool = Pool.build(vb, load_adp(season))
+        up = pl.read_parquet(OUT_DIR / f"upside_{season}.parquet") if upside else None
+        pool = Pool.build(vb, load_adp(season), up)
         ecr = load_ecr(season).drop_nulls("player_id").unique("player_id").select("player_id", "ecr")
         ecr_map = dict(ecr.rows())
         ecr_rank = np.array([ecr_map.get(pid, MISSING_ADP + i) for i, pid in enumerate(pool.ids)], dtype=float)
@@ -125,9 +128,36 @@ def run(reps: int, config: LeagueConfig, calibrated: bool = False) -> pl.DataFra
                     others = np.delete(scores, me)
                     rows.append({"season": season, "slot": slot, "rep": rep, "drafter": drafter,
                                  "points": scores[me], "edge": scores[me] - others.mean(),
-                                 "rank": int((scores > scores[me]).sum() + 1)})
+                                 "rank": int((scores > scores[me]).sum() + 1),
+                                 "positions": "".join(p[0] if p != "DST" else "D" for _, p in rosters[me])})
             print(f"  {season} slot {slot} done", flush=True)
     return pl.DataFrame(rows)
+
+
+def mistakes(positions: str, config: LeagueConfig) -> dict[str, bool]:
+    """Classic, human-obvious draft errors. These TEST the drafters; they never drive a pick.
+    positions: one letter per pick in order (Q R W T K D)."""
+    r = config.roster
+    first = lambda n: positions[:n]  # noqa: E731
+    starters_ok = (positions.count("Q") >= r.QB and positions.count("R") >= r.RB and positions.count("W") >= r.WR
+                   and positions.count("T") >= r.TE
+                   and positions.count("R") + positions.count("W") + positions.count("T") >= r.RB + r.WR + r.TE + r.FLEX)
+    return {
+        "QB in rounds 1-2 (1-QB league)": r.QB == 1 and not r.SUPERFLEX and "Q" in first(2),
+        "2 QBs before round 6": not r.SUPERFLEX and first(5).count("Q") >= 2,
+        "2 TEs before round 6": first(5).count("T") >= 2,
+        "K/DST before the last 2 rounds": any(c in "KD" for c in positions[:-2]),
+        "empty starting slot": not starters_ok,
+    }
+
+
+def audit(res: pl.DataFrame, config: LeagueConfig) -> list[str]:
+    lines = ["", "Mistake audit (share of drafts with each error; target 0%):", "",
+             "| mistake | " + " | ".join(DRAFTERS) + " |", "| --- " * (len(DRAFTERS) + 1) + "|"]
+    flags = {dr: [mistakes(p, config) for p in res.filter(pl.col("drafter") == dr)["positions"]] for dr in DRAFTERS}
+    for name in next(iter(flags.values()))[0]:
+        lines.append(f"| {name} | " + " | ".join(f"{np.mean([f[name] for f in flags[dr]]):.1%}" for dr in DRAFTERS) + " |")
+    return lines
 
 
 def report(res: pl.DataFrame) -> str:
@@ -145,10 +175,12 @@ def report(res: pl.DataFrame) -> str:
     for a, b in [("sim", "vor"), ("sim", "adp"), ("vor", "adp")]:
         lines.append(f"| {a} - {b} | {bootstrap((wide[a] - wide[b]).to_numpy())} |")
     lines += ["", "By season (edge vs league average):", "", "| season | sim | vor | adp |", "| --- | --- | --- | --- |"]
-    for s in SEASONS:
+    for s in sorted(res["season"].unique().to_list()):
         w = res.filter(pl.col("season") == s).group_by("drafter").agg(pl.col("edge").mean())
         m = dict(w.rows())
         lines.append(f"| {s} | {m['sim']:.0f} | {m['vor']:.0f} | {m['adp']:.0f} |")
+    if "positions" in res.columns:
+        lines += audit(res, PRESETS["standard-ppr"])
     return "\n".join(lines) + "\n"
 
 
@@ -156,10 +188,27 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--reps", type=int, default=10)
     ap.add_argument("--calibrated", action="store_true", help="per-position calibration (src/models/calibration.py)")
+    ap.add_argument("--seasons", type=int, nargs="+", default=None, help="run part of the test (for parallel runs)")
+    ap.add_argument("--merge", nargs="+", default=None, help="parquet parts to combine into one report")
+    ap.add_argument("--tag", default=None, help="report name override")
+    ap.add_argument("--upside", type=float, default=0.0,
+                    help="UPSIDE_WEIGHT for the upside-valued bench (SCRUM-94; pre-registered test value 0.5)")
     args = ap.parse_args()
-    res = run(args.reps, PRESETS["standard-ppr"], args.calibrated)
+    if args.merge:  # combine parallel parts (same rules, same seeds) into one report
+        res = pl.concat([pl.read_parquet(f) for f in args.merge])
+        tag = args.tag or f"mock_draft_{date.today()}"
+        res.write_parquet(REPORT_DIR / f"{tag}.parquet")
+        text = report(res)
+        (REPORT_DIR / f"{tag}.md").write_text(text, encoding="utf-8")
+        print(text)
+        return
+    if args.upside:
+        import src.draft.recommender as rec
+        rec.UPSIDE_WEIGHT = args.upside
+    res = run(args.reps, PRESETS["standard-ppr"], args.calibrated, upside=bool(args.upside), seasons=args.seasons)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    tag = f"mock_draft_{date.today()}" + ("_calibrated" if args.calibrated else "")
+    tag = args.tag or (f"mock_draft_{date.today()}" + ("_calibrated" if args.calibrated else "")
+                       + (f"_upside{args.upside:g}" if args.upside else ""))
     res.write_parquet(REPORT_DIR / f"{tag}.parquet")
     text = report(res)
     (REPORT_DIR / f"{tag}.md").write_text(text, encoding="utf-8")

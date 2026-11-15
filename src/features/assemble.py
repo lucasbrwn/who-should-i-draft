@@ -22,6 +22,7 @@ from src.features.defense import PBP_COLS as DEFENSE_PBP_COLS
 from src.features.defense import build_defense_features, defense_plays, fantasy_over_expected_allowed
 from src.features.matchup import PBP_COLS as MATCHUP_PBP_COLS
 from src.features.matchup import build_matchup_features, target_depths
+from src.features.offseason import build_offseason_features, read_week1_rosters
 from src.features.preseason import build_preseason_features, read_win_totals
 from src.features.routes import PBP_COLS as ROUTES_PBP_COLS
 from src.features.routes import build_route_features, read_participation
@@ -67,7 +68,8 @@ def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> p
     preseason = build_preseason_features(pw, schedules, read_win_totals())
     age = build_age_features(pw, read_players())
     routes = build_route_features(pw, read_participation(sorted(pw["season"].unique().to_list())), pbp)
-    return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes])
+    offseason = build_offseason_features(pw, read_week1_rosters())
+    return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes, offseason])
 
 
 def feature_columns(feats: pl.DataFrame) -> list[str]:

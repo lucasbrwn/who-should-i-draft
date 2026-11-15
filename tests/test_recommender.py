@@ -71,6 +71,37 @@ def test_fast_enough_on_a_full_size_board():
     for _ in range(5):
         i = len(d.picks)
         d.make_pick(p.ids[i], p.names[i], p.pos[i])
+    # Live budget (two-stage search): fine for a 60-90 s draft clock. Mock-draft budget: fast enough
+    # to run 1,080 drafts.
     start = time.time()
     recommend(d, p, CFG)
+    assert time.time() - start < 12.0
+    start = time.time()
+    recommend(d, p, CFG, n_candidates=6, n_sims=50, stage2_top=0, stage2_sims=0)
     assert time.time() - start < 3.0
+
+
+def test_second_qb_is_only_a_backup_in_1qb_but_a_starter_in_superflex():
+    from src.draft.recommender import Roster
+    repl = {"QB": 220.0, "RB": 130.0, "WR": 130.0, "TE": 90.0}
+    one = Roster(CFG, {"QB": [320.0]}, repl)
+    sf = Roster(PRESETS["superflex-half-ppr"], {"QB": [320.0]}, repl)
+    gain_1qb = one.score(("QB", 300.0)) - one.score()
+    gain_sf = sf.score(("QB", 300.0)) - sf.score()
+    assert gain_1qb == pytest.approx(BENCH_WEIGHT * (300 - 220))   # backup: 15% of what he beats waivers by
+    assert gain_sf == pytest.approx(300 - 220)                       # superflex starter over a waiver QB
+
+
+def test_first_qb_adds_value_over_a_waiver_qb_not_his_raw_points():
+    from src.draft.recommender import Roster
+    repl = {"QB": 220.0, "RB": 130.0, "WR": 130.0, "TE": 90.0}
+    empty = Roster(CFG, {}, repl)
+    assert empty.score(("QB", 300.0)) - empty.score() == pytest.approx(80.0)
+
+
+def test_caps_stop_a_third_qb():
+    from src.draft.recommender import Roster, best_by_marginal, position_caps
+    p = pool()
+    r = Roster(CFG, {"QB": [350.0, 340.0]}, p.replacement)
+    best = best_by_marginal(p, r, set(), 12, 10, ["QB", "QB"], None, caps=position_caps(CFG))
+    assert all(p.pos[i] != "QB" for _, i in best)

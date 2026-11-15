@@ -43,3 +43,13 @@ def test_same_seed_same_opponent_picks_until_our_first_pick():
     b = run_draft(pool, ecr, CFG, slot=6, drafter="adp", seed=7)
     # Teams picking before slot 6 in round 1 see identical boards, so they take the same players.
     assert [r[0] for r in a[:5]] == [r[0] for r in b[:5]]
+
+
+def test_mistake_audit_catches_the_classics():
+    from src.backtest.mock_draft import mistakes
+    good = "RWWRTQWRWTQWRKD"
+    bad = "QTTWRWQRWRWKDWR"   # QB round 1, 2 TEs early, K/DST before the end
+    assert not any(mistakes(good, CFG).values())
+    m = mistakes(bad, CFG)
+    assert m["QB in rounds 1-2 (1-QB league)"] and m["2 TEs before round 6"] and m["K/DST before the last 2 rounds"]
+    assert not m["empty starting slot"]
