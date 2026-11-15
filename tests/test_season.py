@@ -45,9 +45,8 @@ def test_season_target_is_zero_when_he_never_played_and_lags_line_up():
     a_rows = pl.DataFrame({"player_id": ["star", "backup"], "player_display_name": ["S", "B"], "position": ["QB", "QB"],
                            "team": ["BUF", "BUF"], "season": [2024, 2024], "draft_number": [7.0, None],
                            "a_ppg": [20.0, 15.0], "a_exp_games": [15.0, 15.0], "a_season": [300.0, 225.0]})
-    for c in ["age", "years_exp", "player_new_team", "no_games_last_season", "win_total", "win_total_change",
-              "new_head_coach", "new_starting_qb", "backup_qb_starting", "implied_total", "vacated_tgt_share_wr",
-              "vacated_tgt_share_te", "vacated_tgt_share_rb", "vacated_tgt_share_total", "vacated_carry_share"]:
+    from src.models.season import ROW_INPUTS
+    for c in ROW_INPUTS:
         a_rows = a_rows.with_columns(pl.lit(0.0).alias(c))
     pw = pl.DataFrame({"player_id": ["star"] * 3 + ["backup"], "season": [2023, 2023, 2024, 2023],
                        "week": [1, 2, 1, 3], "fantasy_points_ppr": [20.0, 30.0, 22.0, 4.0]})

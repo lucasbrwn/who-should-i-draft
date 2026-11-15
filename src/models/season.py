@@ -61,7 +61,10 @@ GAME_SPECIFIC = ["div_game", "temp", "wind", "is_home", "team_spread", "opp_impl
 ROW_INPUTS = ["age", "years_exp", "player_new_team", "no_games_last_season", "win_total", "win_total_change",
               "new_head_coach", "new_starting_qb", "backup_qb_starting", "implied_total",
               "vacated_tgt_share_wr", "vacated_tgt_share_te", "vacated_tgt_share_rb", "vacated_tgt_share_total",
-              "vacated_carry_share"]
+              "vacated_carry_share",
+              # offseason departures/arrivals (SCRUM-94)
+              "offseason_vacated_tgt_wr", "offseason_vacated_tgt_te", "offseason_vacated_tgt_rb",
+              "offseason_vacated_tgt_total", "offseason_vacated_carry", "offseason_arrived_tgt", "offseason_arrived_carry"]
 B_PARAMS = dict(learning_rate=0.05, max_iter=200, max_leaf_nodes=15, min_samples_leaf=20,
                 l2_regularization=1.0, random_state=0)
 
@@ -173,6 +176,8 @@ def season_dataset(a_rows: pl.DataFrame, pw: pl.DataFrame, schedules: pl.DataFra
     lag = lambda k, sfx: res.select("player_id", pl.col("season") + k, **{f"games{sfx}": "games",  # noqa: E731
                                                                          f"ppg{sfx}": pl.col("points") / pl.col("games")})
     prev_cols = [c for c in a_rows.columns if c.endswith("_prev") and not c.startswith("opp_")]
+    # Inputs added after these rows were cached come in blank until the rows are rebuilt (--rebuild).
+    a_rows = a_rows.with_columns([pl.lit(None, dtype=pl.Float64).alias(c) for c in ROW_INPUTS if c not in a_rows.columns])
     return (a_rows.select("player_id", "player_display_name", "position", "team", "season", "draft_number",
                           "a_ppg", "a_exp_games", "a_season", *ROW_INPUTS, *prev_cols,
                           *[c for c in a_rows.columns if c.startswith("pg_")])
@@ -264,13 +269,18 @@ def load_a(season: int, rebuild: bool = False) -> pl.DataFrame:
     return pl.read_parquet(path)
 
 
+def season_table(rebuild: bool = False) -> pl.DataFrame:
+    """Every non-exam season's board rows with inputs + actual results (shared with src/models/upside.py)."""
+    pw, schedules = pl.read_parquet(PLAYER_WEEKS_PATH), read_schedules()
+    seasons = [s for s in range(FIRST_SEASON, LIVE_SEASON + 1) if s != EXAM_SEASON]
+    return pl.concat([season_dataset(load_a(s, rebuild), pw, schedules) for s in seasons], how="diagonal_relaxed")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rebuild", action="store_true", help="rebuild the cached option-A rows")
     args = parser.parse_args()
-    pw, schedules = pl.read_parquet(PLAYER_WEEKS_PATH), read_schedules()
-    seasons = [s for s in range(FIRST_SEASON, LIVE_SEASON + 1) if s != EXAM_SEASON]
-    data = pl.concat([season_dataset(load_a(s, args.rebuild), pw, schedules) for s in seasons], how="diagonal_relaxed")
+    data = season_table(args.rebuild)
 
     results = []
     for season in EVAL_SEASONS:
