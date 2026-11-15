@@ -13,6 +13,7 @@ import polars as pl
 from src.backtest.harness import SEASONS, compare, run, summarize, weekly_metrics
 from src.models.baseline import Baseline
 from src.models.boosting import STAT_ERROR_PATH, TD_STATS, TUNED_PATH, BoostingModel
+from src.features.preseason import FEATURES as PRESEASON_FEATURES
 from src.models.ridge import RidgeModel
 
 FEATURES_PATH = Path("data/processed/features.parquet")
@@ -23,7 +24,10 @@ MODELS = {"baseline": Baseline, "ridge": RidgeModel,
           "boosting_default": BoostingModel,
           "boosting_tuned": lambda: BoostingModel(tuned=STAT_ERROR_PATH, name="boosting_tuned"),
           "boosting_td": lambda: BoostingModel(tuned=STAT_ERROR_PATH, tuned_stats=TD_STATS, name="boosting_td"),
-          "boosting_rank": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_rank")}
+          "boosting_rank": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_rank"),
+          # SCRUM-88 A/B: the default model without the preseason columns
+          "boosting_no_preseason": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_preseason",
+                                                         drop=PRESEASON_FEATURES)}
 DEFAULT_MODELS = ["baseline", "ridge", "boosting"]
 TOP_FEATURES = 5
 

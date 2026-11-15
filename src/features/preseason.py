@@ -33,6 +33,9 @@ WIN_TOTALS_PATH = Path("data/reference/win_totals.csv")  # columns: season, team
 OUT_PATH = Path("data/processed/features_preseason.parquet")
 
 KEY = ["player_id", "season", "week"]
+# The feature columns this module adds (used to switch them off in the SCRUM-88 backtest).
+FEATURES = ["win_total", "win_total_change", "new_head_coach", "new_starting_qb", "backup_qb_starting",
+            "player_new_team", "no_games_last_season"]
 
 
 def team_games(schedules: pl.DataFrame) -> pl.DataFrame:
