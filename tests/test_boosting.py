@@ -3,7 +3,7 @@
 import numpy as np
 import polars as pl
 
-from src.models.boosting import BoostingModel
+from src.models.boosting import BoostingModel, usable_columns as model_columns
 from test_ridge import make_feats
 
 FAST = {"max_iter": 30, "min_samples_leaf": 5}
@@ -61,3 +61,11 @@ def test_all_blank_column_for_a_position_is_dropped():
     feats = make_feats(seasons=(2020,)).with_columns(rb_only=pl.lit(None, dtype=pl.Float64))
     model = BoostingModel(params=FAST).fit(feats)
     assert "rb_only" not in model.columns["WR"]
+
+
+def test_dropped_features_are_left_out():
+    feats = make_feats(seasons=(2020,))
+    col = next(c for c in model_columns(feats))
+    model = BoostingModel(params=FAST, drop=[col]).fit(feats)
+    assert all(col not in cols for cols in model.columns.values())
+    assert model.predict(feats.head(3)).height == 3

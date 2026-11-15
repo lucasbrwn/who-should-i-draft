@@ -21,6 +21,7 @@ from src.features.defense import PBP_COLS as DEFENSE_PBP_COLS
 from src.features.defense import build_defense_features, defense_plays, fantasy_over_expected_allowed
 from src.features.matchup import PBP_COLS as MATCHUP_PBP_COLS
 from src.features.matchup import build_matchup_features, target_depths
+from src.features.preseason import build_preseason_features, read_win_totals
 from src.features.team import build_team_features, join_to_player_weeks, team_plays
 from src.features.usage import build_usage_features
 from src.features.vacated import build_vacated_features
@@ -60,7 +61,8 @@ def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> p
     defense = build_defense_features(schedules, defense_plays(pbp), fantasy_over_expected_allowed(pw))
     matchup = build_matchup_features(pw, usage, defense, target_depths(pbp))  # carries the opponent's ratings
     vacated = build_vacated_features(pw)
-    return assemble(pw, [usage, team, matchup, vacated])
+    preseason = build_preseason_features(pw, schedules, read_win_totals())
+    return assemble(pw, [usage, team, matchup, vacated, preseason])
 
 
 def feature_columns(feats: pl.DataFrame) -> list[str]:

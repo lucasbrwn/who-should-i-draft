@@ -1,0 +1,238 @@
+2026: Tm,Super Bowl Odds,W/L O-U,Record
+Arizona Cardinals,+50000,3.5,3-6
+Atlanta Falcons,+10000,7.5,3-6
+Baltimore Ravens,+1100,10.5,4-5
+Buffalo Bills,+1000,10.5,7-1
+Carolina Panthers,+10000,7.5,3-5
+Chicago Bears,+2500,9.5,7-2
+Cincinnati Bengals,+2000,10.5,6-2
+Cleveland Browns,+25000,5.5,5-4
+Dallas Cowboys,+2500,9.5,4-5
+Denver Broncos,+1800,9.5,7-2
+Detroit Lions,+1800,10.5,6-2
+Green Bay Packers,+2000,9.5,6-3
+Houston Texans,+2000,9.5,3-5
+Indianapolis Colts,+6600,8.5,2-7
+Jacksonville Jaguars,+3000,9.5,6-2
+Kansas City Chiefs,+1500,10.5,6-2
+Las Vegas Raiders,+15000,5.5,4-5
+Los Angeles Chargers,+1700,9.5,0-8
+Los Angeles Rams,+500,11.5,5-4
+Miami Dolphins,+50000,3.5,1-7
+Minnesota Vikings,+5000,8.5,6-2
+New England Patriots,+2000,9.5,5-4
+New Orleans Saints,+8000,7.5,3-5
+New York Giants,+6600,7.5,5-3-1
+New York Jets,+25000,5.5,2-7
+Philadelphia Eagles,+1800,10.5,2-7
+Pittsburgh Steelers,+8000,8.5,6-2
+San Francisco 49ers,+1700,10.5,7-1
+Seattle Seahawks,+1200,10.5,5-4
+Tampa Bay Buccaneers,+5000,8.5,3-6
+Tennessee Titans,+25000,6.5,1-7
+Washington Commanders,+6600,7.5,3-5-1
+
+25: Tm,Super Bowl Odds,W/L O-U,Record
+Arizona Cardinals,+5000,8.5,3-14 (under)
+Atlanta Falcons,+8000,8.5,8-9 (under)
+Baltimore Ravens,+700,11.5,8-9 (under)
+Buffalo Bills,+700,12.5,12-5 (under)
+Carolina Panthers,+15000,6.5,8-9 (over)
+Chicago Bears,+4000,8.5,11-6 (over)
+Cincinnati Bengals,+2000,9.5,6-11 (under)
+Cleveland Browns,+30000,5.5,5-12 (under)
+Dallas Cowboys,+6000,7.5,7-9-1 (under)
+Denver Broncos,+2500,9.5,14-3 (over)
+Detroit Lions,+1200,10.5,9-8 (under)
+Green Bay Packers,+1200,10.5,9-7-1 (under)
+Houston Texans,+3500,9.5,12-5 (over)
+Indianapolis Colts,+10000,7.5,8-9 (over)
+Jacksonville Jaguars,+8000,7.5,13-4 (over)
+Kansas City Chiefs,+800,11.5,6-11 (under)
+Las Vegas Raiders,+10000,6.5,3-14 (under)
+Los Angeles Chargers,+2800,9.5,11-6 (over)
+Los Angeles Rams,+2000,9.5,12-5 (over)
+Miami Dolphins,+8000,7.5,7-10 (under)
+Minnesota Vikings,+2500,9.5,9-8 (under)
+New England Patriots,+8000,8.5,14-3 (over)
+New Orleans Saints,+30000,4.5,6-11 (over)
+New York Giants,+20000,5.5,4-13 (under)
+New York Jets,+20000,6.5,3-14 (under)
+Philadelphia Eagles,+700,11.5,11-6 (under)
+Pittsburgh Steelers,+4000,8.5,10-7 (over)
+San Francisco 49ers,+2000,10.5,12-5 (over)
+Seattle Seahawks,+6000,8.5,14-3 (over)
+Tampa Bay Buccaneers,+3000,9.5,8-9 (under)
+Tennessee Titans,+20000,6.5,3-14 (under)
+Washington Commanders,+1800,9.5,5-12 (under)
+
+24: Tm,Super Bowl Odds,W/L O-U,Record
+Arizona Cardinals,+12500,7.0,8-9 (over)
+Atlanta Falcons,+3000,9.5,8-9 (under)
+Baltimore Ravens,+1000,10.5,12-5 (over)
+Buffalo Bills,+1600,10.0,13-4 (over)
+Carolina Panthers,+25000,5.5,5-12 (under)
+Chicago Bears,+3500,8.5,5-12 (under)
+Cincinnati Bengals,+1300,10.5,9-8 (under)
+Cleveland Browns,+4000,8.5,3-14 (under)
+Dallas Cowboys,+2000,10.0,7-10 (under)
+Denver Broncos,+15000,5.5,10-7 (over)
+Detroit Lions,+1200,10.5,15-2 (over)
+Green Bay Packers,+1600,10.0,11-6 (over)
+Houston Texans,+1600,9.5,10-7 (over)
+Indianapolis Colts,+8000,8.5,8-9 (under)
+Jacksonville Jaguars,+5000,8.5,4-13 (under)
+Kansas City Chiefs,+500,11.5,15-2 (over)
+Las Vegas Raiders,+15000,6.5,4-13 (under)
+Los Angeles Chargers,+4000,9.0,11-6 (over)
+Los Angeles Rams,+3000,8.5,10-7 (over)
+Miami Dolphins,+2500,10.0,8-9 (under)
+Minnesota Vikings,+10000,6.5,14-3 (over)
+New England Patriots,+30000,4.5,4-13 (under)
+New Orleans Saints,+10000,7.5,5-12 (under)
+New York Giants,+20000,6.5,3-14 (under)
+New York Jets,+2000,9.5,5-12 (under)
+Philadelphia Eagles,+1200,10.5,14-3 (over)
+Pittsburgh Steelers,+5000,8.0,10-7 (over)
+San Francisco 49ers,+600,11.5,6-11 (under)
+Seattle Seahawks,+6600,7.5,10-7 (over)
+Tampa Bay Buccaneers,+8000,7.5,10-7 (over)
+Tennessee Titans,+15000,6.5,3-14 (under)
+Washington Commanders,+15000,6.5,12-5 (over)
+
+23: Tm,Super Bowl Odds,W/L O-U,Record
+Arizona Cardinals,+20000,4.5,4-13 (under)
+Atlanta Falcons,+7000,8.5,7-10 (under)
+Baltimore Ravens,+1800,10.5,13-4 (over)
+Buffalo Bills,+900,10.5,11-6 (over)
+Carolina Panthers,+8000,7.5,2-15 (under)
+Chicago Bears,+5000,7.5,7-10 (under)
+Cincinnati Bengals,+1000,11.5,9-8 (under)
+Cleveland Browns,+3500,9.5,11-6 (over)
+Dallas Cowboys,+1400,9.5,12-5 (over)
+Denver Broncos,+4500,8.5,8-9 (under)
+Detroit Lions,+2200,9.5,12-5 (over)
+Green Bay Packers,+5000,7.5,9-8 (over)
+Houston Texans,+20000,6.5,10-7 (over)
+Indianapolis Colts,+12500,6.5,9-8 (over)
+Jacksonville Jaguars,+2800,9.5,9-8 (under)
+Kansas City Chiefs,+600,11.5,11-6 (under)
+Las Vegas Raiders,+7500,6.5,8-9 (over)
+Los Angeles Chargers,+2500,9.5,5-12 (under)
+Los Angeles Rams,+8000,6.5,10-7 (over)
+Miami Dolphins,+2500,9.5,11-6 (over)
+Minnesota Vikings,+4000,8.5,7-10 (under)
+New England Patriots,+6000,7.5,4-13 (under)
+New Orleans Saints,+3500,9.5,9-8 (under)
+New York Giants,+4800,7.5,6-11 (under)
+New York Jets,+1600,9.5,7-10 (under)
+Philadelphia Eagles,+750,11.5,11-6 (under)
+Pittsburgh Steelers,+5000,8.5,10-7 (over)
+San Francisco 49ers,+1000,10.5,12-5 (over)
+Seattle Seahawks,+3500,8.5,9-8 (over)
+Tampa Bay Buccaneers,+10000,6.5,9-8 (over)
+Tennessee Titans,+9000,7.5,6-11 (under)
+Washington Commanders,+8000,6.5,4-13 (under)
+
+22: Tm,Super Bowl Odds,W/L O-U,Record
+Arizona Cardinals,+3500,8.5,4-13 (under)
+Atlanta Falcons,+23000,4.5,7-10 (over)
+Baltimore Ravens,+1880,10.5,10-7 (under)
+Buffalo Bills,+600,11.5,13-3 (over)
+Carolina Panthers,+12100,6.5,7-10 (over)
+Chicago Bears,+14400,6.5,3-14 (under)
+Cincinnati Bengals,+2080,9.5,12-4 (over)
+Cleveland Browns,+3700,8.5,7-10 (under)
+Dallas Cowboys,+1960,10.5,12-5 (over)
+Denver Broncos,+1680,10.5,5-12 (under)
+Detroit Lions,+12000,6.5,9-8 (over)
+Green Bay Packers,+1120,10.5,8-9 (under)
+Houston Texans,+29000,4.5,3-13-1 (under)
+Indianapolis Colts,+2240,9.5,4-12-1 (under)
+Jacksonville Jaguars,+13000,6.5,9-8 (over)
+Kansas City Chiefs,+1020,10.5,14-3 (over)
+Las Vegas Raiders,+3600,8.5,6-11 (under)
+Los Angeles Chargers,+1380,10.5,10-7 (under)
+Los Angeles Rams,+1120,10.5,5-12 (under)
+Miami Dolphins,+3900,8.5,9-8 (over)
+Minnesota Vikings,+3600,9.5,13-4 (over)
+New England Patriots,+4200,8.5,8-9 (under)
+New Orleans Saints,+3800,8.5,7-10 (under)
+New York Giants,+11800,7.5,9-7-1 (over)
+New York Jets,+13600,5.5,7-10 (over)
+Philadelphia Eagles,+2440,9.5,14-3 (over)
+Pittsburgh Steelers,+8000,7.5,9-8 (over)
+San Francisco 49ers,+1600,9.5,13-4 (over)
+Seattle Seahawks,+17000,5.5,9-8 (over)
+Tampa Bay Buccaneers,+780,11.5,8-9 (under)
+Tennessee Titans,+3800,9.5,7-10 (under)
+Washington Commanders,+7600,7.5,8-8-1 (over)
+
+21:
+Tm,Super Bowl Odds,W/L O-U,Record
+Arizona Cardinals,+3500,8.5,11-6 (over)
+Atlanta Falcons,+8000,7.5,7-10 (under)
+Baltimore Ravens,+1400,10.5,8-9 (under)
+Buffalo Bills,+1100,11.5,11-6 (under)
+Carolina Panthers,+8000,7.5,5-12 (under)
+Chicago Bears,+6600,7.5,6-11 (under)
+Cincinnati Bengals,+15000,6.5,10-7 (over)
+Cleveland Browns,+1600,10.5,8-9 (under)
+Dallas Cowboys,+3000,9.0,12-5 (over)
+Denver Broncos,+5000,9.0,7-10 (under)
+Detroit Lions,+25000,4.5,3-13-1 (under)
+Green Bay Packers,+1400,10.5,13-4 (over)
+Houston Texans,+30000,4.0,4-13 (push)
+Indianapolis Colts,+3500,9.0,9-8 (push)
+Jacksonville Jaguars,+12500,6.5,3-14 (under)
+Kansas City Chiefs,+450,12.5,12-5 (under)
+Las Vegas Raiders,+8000,7.5,10-7 (over)
+Los Angeles Chargers,+3000,9.5,9-8 (under)
+Los Angeles Rams,+1200,10.5,12-5 (over)
+Miami Dolphins,+4000,9.0,9-8 (push)
+Minnesota Vikings,+4000,9.0,8-9 (under)
+New England Patriots,+3000,9.5,10-7 (over)
+New Orleans Saints,+4000,9.0,9-8 (push)
+New York Giants,+8000,7.0,4-13 (under)
+New York Jets,+15000,6.0,4-13 (under)
+Philadelphia Eagles,+10000,6.5,9-8 (over)
+Pittsburgh Steelers,+5000,8.5,9-7-1 (over)
+San Francisco 49ers,+1400,10.5,10-7 (under)
+Seattle Seahawks,+2500,9.5,7-10 (under)
+Tampa Bay Buccaneers,+700,12.0,13-4 (over)
+Tennessee Titans,+2000,9.5,12-5 (over)
+Washington Football Team,+4000,8.5,7-10 (under)
+
+20: Tm,Super Bowl Odds,W/L O-U,Record
+Arizona Cardinals,+6000,7.5,8-8 (over)
+Atlanta Falcons,+5000,7.5,4-12 (under)
+Baltimore Ravens,+500,11.5,11-5 (under)
+Buffalo Bills,+3000,9.0,13-3 (over)
+Carolina Panthers,+20000,5.5,5-11 (under)
+Chicago Bears,+5000,8.0,8-8 (push)
+Cincinnati Bengals,+20000,5.5,4-11-1 (under)
+Cleveland Browns,+5000,8.5,11-5 (over)
+Dallas Cowboys,+1200,10.0,6-10 (under)
+Denver Broncos,+4000,7.5,5-11 (under)
+Detroit Lions,+8000,7.0,5-11 (under)
+Green Bay Packers,+3000,8.5,13-3 (over)
+Houston Texans,+6000,7.5,4-12 (under)
+Indianapolis Colts,+2500,9.5,11-5 (over)
+Jacksonville Jaguars,+50000,4.5,1-15 (under)
+Kansas City Chiefs,+450,11.5,14-2 (over)
+Las Vegas Raiders,+4000,7.5,8-8 (over)
+Los Angeles Chargers,+6000,8.0,7-9 (under)
+Los Angeles Rams,+5000,8.5,10-6 (over)
+Miami Dolphins,+10000,6.0,10-6 (over)
+Minnesota Vikings,+2500,9.0,7-9 (under)
+New England Patriots,+4000,9.0,7-9 (under)
+New Orleans Saints,+1000,10.5,12-4 (over)
+New York Giants,+10000,6.5,6-10 (under)
+New York Jets,+20000,6.5,2-14 (under)
+Philadelphia Eagles,+3000,9.5,4-11-1 (under)
+Pittsburgh Steelers,+2500,9.5,12-4 (over)
+San Francisco 49ers,+1000,10.5,6-10 (under)
+Seattle Seahawks,+1400,9.5,12-4 (over)
+Tampa Bay Buccaneers,+1000,9.5,11-5 (over)
+Tennessee Titans,+3000,8.5,11-5 (over)
+Washington Football Team,+30000,5.0,7-9 (over)

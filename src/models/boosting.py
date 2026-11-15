@@ -42,9 +42,10 @@ class BoostingModel:
     name = "boosting"
 
     def __init__(self, refit_weeks: int = REFIT_WEEKS, params: dict | None = None, tuned: bool | Path = False,
-                 tuned_stats: set[str] | None = None, name: str | None = None):
+                 tuned_stats: set[str] | None = None, name: str | None = None, drop: list[str] | None = None):
         """tuned: True loads TUNED_PATH, or pass a settings file. tuned_stats: apply tuned settings only
-        to these stats (defaults for the rest)."""
+        to these stats (defaults for the rest). drop: feature columns to leave out (A/B tests)."""
+        self.drop = set(drop or [])
         self.refit_weeks = refit_weeks
         self.params = {**PARAMS, **(params or {})}
         path = TUNED_PATH if tuned is True else tuned
@@ -86,7 +87,7 @@ class BoostingModel:
             if rows.height < 50:
                 continue
             # Columns that are blank for every row of this position (e.g. rb_checkdown for QBs) are dropped.
-            self.columns[pos] = usable_columns(rows)
+            self.columns[pos] = [c for c in usable_columns(rows) if c not in self.drop]
             x = self._x(rows, self.columns[pos])
             for stat in stats:
                 y = rows[f"y_{stat}"].to_numpy()
