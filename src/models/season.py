@@ -144,7 +144,11 @@ def a_projection(season: int, scoring=SCORING) -> pl.DataFrame:
     model = BoostingModel(tuned=TUNED_PATH, name="boosting").fit(history)
     per_game = model.predict(neutralize(rows, history))  # row-aligned with rows
     a_ppg = add_fantasy_points(per_game.drop("player_id").with_columns(position=rows["position"]), scoring)["points"]
+    # Per-game stat projections (pg_*) are kept so a league's own scoring can be applied later
+    # (src/draft/vor.py). They are NOT season-model inputs (see b_inputs).
+    stats = per_game.drop("player_id").rename(lambda c: f"pg_{c}")
     return (rows.join(players.select("player_id", "draft_number"), on="player_id", how="left")
+            .with_columns(stats)
             .with_columns(a_ppg=a_ppg, a_exp_games=pl.Series(expected_games(season, rows["position"])))
             .with_columns(a_season=pl.col("a_ppg") * pl.col("a_exp_games")))
 
@@ -170,7 +174,8 @@ def season_dataset(a_rows: pl.DataFrame, pw: pl.DataFrame, schedules: pl.DataFra
                                                                          f"ppg{sfx}": pl.col("points") / pl.col("games")})
     prev_cols = [c for c in a_rows.columns if c.endswith("_prev") and not c.startswith("opp_")]
     return (a_rows.select("player_id", "player_display_name", "position", "team", "season", "draft_number",
-                          "a_ppg", "a_exp_games", "a_season", *ROW_INPUTS, *prev_cols)
+                          "a_ppg", "a_exp_games", "a_season", *ROW_INPUTS, *prev_cols,
+                          *[c for c in a_rows.columns if c.startswith("pg_")])
             .join(lag(1, "_last"), on=["player_id", "season"], how="left")
             .join(lag(2, "_2ago"), on=["player_id", "season"], how="left")
             .join(week1_starters(schedules), on=["player_id", "season"], how="left")
@@ -182,7 +187,7 @@ def season_dataset(a_rows: pl.DataFrame, pw: pl.DataFrame, schedules: pl.DataFra
 
 def b_inputs(df: pl.DataFrame) -> list[str]:
     skip = {"player_id", "player_display_name", "team", "season", "actual", "naive", "a_season", "a_exp_games"}
-    return [c for c in df.columns if c not in skip]
+    return [c for c in df.columns if c not in skip and not c.startswith("pg_")]  # pg_*: for league scoring only
 
 
 class SeasonModel:
