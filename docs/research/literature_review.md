@@ -113,9 +113,33 @@ Questions worth asking experienced managers:
 6. What **draft mistakes** do you see most often (reaching, position runs, ignoring bye weeks, handcuffs)?
 7. What would make you **trust a tool's recommendation** over your own gut?
 
-> _Findings:_
->
-> -
+### Findings (SCRUM-45, 2026-11-14)
+
+Source: Matt Okada, "2026 NFL fantasy football draft tips: 18 must-know do's and don'ts," NFL.com (12-team PPR, ESPN ADP). Lucas rewrote SCRUM-45 to use published expert advice instead of interviews.
+
+**Tag key:**
+- ✅ **Tested:** our own data has already checked it.
+- 🧪 **Hypothesis:** test it in the mock-draft simulation (SCRUM-59). The recommender never hard-codes strategy rules; if the simulation supports a tip, the recommender will do it on its own.
+- ➖ **Not testable:** about taste, process or emotion, not data.
+
+| Tip | Tag | What we know |
+|---|---|---|
+| **Follow the volume** ("top five RBs in scrimmage touches all finished top-eight RBs") | ✅ | Agrees. Opportunity inputs dominate the model: snap share, carry and target share, expected points (permutation importance, 2026-11-14). |
+| **Don't buy the "injury-prone" narrative** ("six of the last seven consensus 1.01 picks missed 5+ games") | ✅ | Agrees. Past injury misses barely predict future ones; a plain position average ties every model (SCRUM-51). Most apparent carryover was benchings. |
+| **Don't let schedule difficulty sway you** | ✅ | Mostly agrees. Opponent-defense inputs carry almost no weight, and Vegas prices most of the matchup. Exception: a defense's fantasy points allowed *by position*, blended with last season, predicts beyond Vegas (SCRUM-89). |
+| **Don't let recency bias reign** (CMC RB1 after an injury year) | ✅ | Agrees. The season model regresses small samples, uses two seasons, and gives real weight to age (SCRUM-53, SCRUM-90). |
+| **Invest in ascending offenses** | ✅ | Partly built in. `win_total_change` (Vegas win total minus last season's wins) and new head coach / new QB flags (SCRUM-88) help QB predictions; effect elsewhere is a tie. |
+| **Don't fear bad offenses in all cases** (Jeanty RB11 in the worst offense) | ✅ | Consistent. Volume outranks team quality in the model; implied team total matters most for QBs. |
+| **Don't avoid RB committees** | ✅ | Consistent. Carry share and snap share capture the split directly instead of a committee label. |
+| **Target rookies** | ✅ | Neutral. Our season board is no worse on pairs involving rookies (51% vs 48% for veterans when disagreeing with ECR, SCRUM-55). Draft slot is a season-model input. |
+| **Go elite or fringe at QB and TE** | 🧪 | Do teams that skip middle-tier QBs/TEs outscore teams that take them? |
+| **Grab one safe player before a positional cliff** (cliffs after RB16, WR18) | 🧪 | Do tiers (SCRUM-57) show cliffs, and does drafting before them win simulations? |
+| **Handcuff other teams' RBs** | 🧪 | Does a late backup RB from a rival team add season points in the simulation? |
+| **Stuff the bench with upside** (Kmet TE36 vs Fannin TE6) | 🧪 | Do high-ceiling late picks beat safe late picks? Needs floor/ceiling (SCRUM-52). |
+| **Don't run from risk** | 🧪 | Same test as the upside bench: does a higher-variance roster win more titles, not just more points? |
+| **Have a plan / don't overplan; don't be afraid to buck trends; know the new landscape; draft players you like** | ➖ | Process and emotion. The tool covers "a plan" by re-ranking live each pick, and "the landscape" through preseason change features. |
+
+**Takeaway for the slides:** published expert advice and our data agree on the stat-based tips: volume, injury narratives, schedule, recency. The strategy tips become testable hypotheses for the mock-draft simulation, so the tool can show whether each one actually pays off.
 
 ## Sources
 

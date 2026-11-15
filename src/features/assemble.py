@@ -23,6 +23,8 @@ from src.features.defense import build_defense_features, defense_plays, fantasy_
 from src.features.matchup import PBP_COLS as MATCHUP_PBP_COLS
 from src.features.matchup import build_matchup_features, target_depths
 from src.features.preseason import build_preseason_features, read_win_totals
+from src.features.routes import PBP_COLS as ROUTES_PBP_COLS
+from src.features.routes import build_route_features, read_participation
 from src.features.team import build_team_features, join_to_player_weeks, team_plays
 from src.features.usage import build_usage_features
 from src.features.vacated import build_vacated_features
@@ -32,7 +34,7 @@ OUT_PATH = Path("data/processed/features.parquet")
 KEY = ["player_id", "season", "week"]
 ID_COLS = ["player_id", "player_display_name", "position", "season", "week", "game_id", "team", "opponent_team"]
 TEAM_PBP_COLS = ["game_id", "season_type", "posteam", "play_type", "pass_oe"]
-PBP_COLS = list(dict.fromkeys(TEAM_PBP_COLS + DEFENSE_PBP_COLS + MATCHUP_PBP_COLS))
+PBP_COLS = list(dict.fromkeys(TEAM_PBP_COLS + DEFENSE_PBP_COLS + MATCHUP_PBP_COLS + ROUTES_PBP_COLS))
 
 # Modeled components + rare components (rates) + opportunities + PPR points for reference.
 TARGETS = [
@@ -64,7 +66,8 @@ def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> p
     vacated = build_vacated_features(pw)
     preseason = build_preseason_features(pw, schedules, read_win_totals())
     age = build_age_features(pw, read_players())
-    return assemble(pw, [usage, team, matchup, vacated, preseason, age])
+    routes = build_route_features(pw, read_participation(sorted(pw["season"].unique().to_list())), pbp)
+    return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes])
 
 
 def feature_columns(feats: pl.DataFrame) -> list[str]:
