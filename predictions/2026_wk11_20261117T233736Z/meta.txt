@@ -1,0 +1,7 @@
+generated_utc: 2026-11-17T23:37:36.533310+00:00
+season: 2026
+week: 11
+model: boosting (tuned, models/boosting_params.json), git 9de7b7c
+trained on: every finished game 2020-2026 before week 11, except 2025 (final exam holdout)
+likely range: 25th-75th pct outcome, BucketRanges(LIKELY) (src/models/ranges.py), 2022-24 backtest
+players: 402 active QB/RB/WR/TE

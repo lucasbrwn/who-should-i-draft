@@ -1,0 +1,11 @@
+player_id,name,position,team,opponent_team,game_id,report_status,proj,bust,ceiling,roster_status
+00-0039923,J.J. McCarthy,QB,NYG,JAX,2026_11_JAX_NYG,,14.1,4.9,23.7,ACT
+00-0038128,Malik Willis,QB,MIA,,,,,,,RES
+00-0036223,Jonathan Taylor,RB,IND,HOU,2026_11_IND_HOU,,13.1,3.4,24.0,ACT
+00-0037263,Tyler Allgeier,RB,ARI,KC,2026_11_ARI_KC,,11.7,2.3,20.6,ACT
+00-0040583,Woody Marks,RB,HOU,IND,2026_11_IND_HOU,,11.5,2.3,20.6,ACT
+00-0036322,Justin Jefferson,WR,MIN,SF,2026_11_MIN_SF,,13.7,3.4,25.6,ACT
+00-0037247,George Pickens,WR,DAL,TEN,2026_11_TEN_DAL,,17.3,7.0,29.2,ACT
+00-0038997,Josh Downs,WR,KC,ARI,2026_11_ARI_KC,,9.3,1.5,19.0,ACT
+00-0037744,Trey McBride,TE,ARI,KC,2026_11_ARI_KC,,13.1,5.7,22.2,ACT
+00-0040128,Tyler Warren,TE,IND,HOU,2026_11_IND_HOU,,9.7,2.3,18.8,ACT

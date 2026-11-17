@@ -1,10 +1,10 @@
 """Predict an upcoming week and save it with a timestamp (SCRUM-76).
 
     python -m src.predict --season 2026 --week 11
-    python -m src.predict --season 2026 --week 11 --check-ranges   # bust/ceiling coverage on 2024
+    python -m src.models.ranges                     # bust/ceiling method comparison (SCRUM-52)
 
 Saves to predictions/<season>_wk<week>_<UTC timestamp>/:
-    demo_players.csv   the 10 demo players (projection, bust, ceiling, opponent, injury status)
+    demo_players.csv   the 10 demo players (projection, likely range, opponent, injury status)
     all_players.csv    every active QB/RB/WR/TE
     games.csv          this week's games + Vegas spread/total (game predictions: SCRUM-75)
     meta.txt           when it ran, model version, what it trained on
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import polars as pl
 
-from src.predict.week import BACKTEST_PATH, demo_table, project_week, range_coverage
+from src.predict.week import demo_table, project_week
 
 OUT_DIR = Path("predictions")
 
@@ -27,15 +27,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--season", type=int, required=True)
     parser.add_argument("--week", type=int, required=True)
-    parser.add_argument("--check-ranges", action="store_true")
     args = parser.parse_args()
     pl.Config.set_tbl_rows(40)
     pl.Config.set_tbl_cols(12)
     pl.Config.set_tbl_width_chars(140)
-
-    if args.check_ranges:
-        print("Bust/ceiling coverage: ranges fit on 2022-23 backtest, checked on 2024 (target ~80% inside)")
-        print(range_coverage(pl.read_parquet(BACKTEST_PATH), [2022, 2023], 2024))
 
     now = datetime.now(timezone.utc)
     preds, games = project_week(args.season, args.week)
@@ -51,12 +46,12 @@ def main() -> None:
         f"generated_utc: {now.isoformat()}\nseason: {args.season}\nweek: {args.week}\n"
         f"model: boosting (tuned, models/boosting_params.json), git {commit}\n"
         f"trained on: every finished game 2020-{args.season} before week {args.week}, except 2025 (final exam holdout)\n"
-        f"bust/ceiling: 10th/90th pct of actual points by position x projection bucket, 2022-24 backtest\n"
+        f"likely range: 25th-75th pct outcome, BucketRanges(LIKELY) (src/models/ranges.py), 2022-24 backtest\n"
         f"players: {preds.height} active QB/RB/WR/TE\n"
     )
 
     print(f"\nDemo players, {args.season} week {args.week} (PPR):")
-    print(demo.select("name", "position", "team", "opponent_team", "proj", "bust", "ceiling", "report_status", "roster_status"))
+    print(demo.select("name", "position", "team", "opponent_team", "proj", "likely_low", "likely_high", "report_status", "roster_status"))
     print("\nGames (spread_line: + = home team favored):")
     print(games)
     print(f"\nSaved to {out}")
