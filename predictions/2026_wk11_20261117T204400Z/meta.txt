@@ -1,0 +1,7 @@
+generated_utc: 2026-11-17T20:44:00.161547+00:00
+season: 2026
+week: 11
+model: boosting (tuned, models/boosting_params.json), git d70d59e
+trained on: every finished game 2020-2026 before week 11, except 2025 (final exam holdout)
+bust/ceiling: 10th/90th pct of actual points by position x projection bucket, 2022-24 backtest
+players: 402 active QB/RB/WR/TE
