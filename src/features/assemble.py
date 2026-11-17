@@ -18,6 +18,7 @@ from pathlib import Path
 import polars as pl
 
 from src.features.age import build_age_features, read_players
+from src.features.decay import build_decay_features
 from src.features.defense import PBP_COLS as DEFENSE_PBP_COLS
 from src.features.defense import build_defense_features, defense_plays, fantasy_over_expected_allowed
 from src.features.matchup import PBP_COLS as MATCHUP_PBP_COLS
@@ -56,7 +57,10 @@ def assemble(pw: pl.DataFrame, groups: list[pl.DataFrame]) -> pl.DataFrame:
         cols = [c for c in g.columns if c not in taken]
         out = out.join(g.select(KEY + cols), on=KEY, how="left")
         taken.update(cols)
-    return out.sort(KEY)
+    # Round off floating-point noise (~1e-16) from summing in a different order run to run: it
+    # occasionally flipped a tree split and moved a projection by up to 0.7 pts between identical runs.
+    floats = [c for c, t in out.schema.items() if t in (pl.Float32, pl.Float64) and not c.startswith("y_")]
+    return out.with_columns([pl.col(c).round(9) for c in floats]).sort(KEY)
 
 
 def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> pl.DataFrame:
@@ -69,7 +73,8 @@ def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> p
     age = build_age_features(pw, read_players())
     routes = build_route_features(pw, read_participation(sorted(pw["season"].unique().to_list())), pbp)
     offseason = build_offseason_features(pw, read_week1_rosters())
-    return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes, offseason])
+    decay = build_decay_features(pw)
+    return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes, offseason, decay])
 
 
 def feature_columns(feats: pl.DataFrame) -> list[str]:

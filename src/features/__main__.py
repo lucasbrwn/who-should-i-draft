@@ -7,20 +7,20 @@ Order matters: matchup needs usage + defense. Each step runs its own checks and 
 
 import polars as pl
 
-from src.features import age, defense, matchup, offseason, preseason, routes, team, usage, vacated
+from src.features import age, decay, defense, matchup, offseason, preseason, routes, team, usage, vacated
 from src.features.assemble import OUT_PATH, assemble, check_features, feature_columns
 
 PW_PATH = "data/processed/player_weeks.parquet"
 
 
 def main() -> None:
-    for step in (usage, team, defense, matchup, vacated, preseason, age, routes, offseason):
+    for step in (usage, team, defense, matchup, vacated, preseason, age, routes, offseason, decay):
         print(f"--- {step.__name__}")
         step.main()
 
     print("--- assemble")
     pw = pl.read_parquet(PW_PATH)
-    groups = [pl.read_parquet(p) for p in (usage.OUT_PATH, team.OUT_PATH, matchup.OUT_PATH, vacated.OUT_PATH, preseason.OUT_PATH, age.OUT_PATH, routes.OUT_PATH, offseason.OUT_PATH)]
+    groups = [pl.read_parquet(p) for p in (usage.OUT_PATH, team.OUT_PATH, matchup.OUT_PATH, vacated.OUT_PATH, preseason.OUT_PATH, age.OUT_PATH, routes.OUT_PATH, offseason.OUT_PATH, decay.OUT_PATH)]
     feats = assemble(pw, groups)
     problems = check_features(feats, pw)
     for p in problems:
