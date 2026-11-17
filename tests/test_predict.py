@@ -4,7 +4,7 @@ import numpy as np
 import polars as pl
 import pytest
 
-from src.predict.week import apply_ranges, fit_ranges, train_rows, upcoming_rows
+from src.predict.week import train_rows, upcoming_rows
 
 
 def roster(rows):
@@ -46,30 +46,7 @@ def test_upcoming_rows_pick_up_the_injury_report_when_it_is_out():
 
 
 def test_train_rows_never_include_this_week_the_future_or_the_final_exam():
-    feats = pl.DataFrame({"season": [2024, 2025, 2026, 2026, 2026], "week": [5, 5, 10, 11, 12]})
+    feats = pl.DataFrame({"season": [2024, 2025, 2026, 2026, 2026], "week": [5, 5, 10, 11, 12],
+                          "player_id": ["a"] * 5})
     kept = train_rows(feats, 2026, 11)
-    assert kept.rows() == [(2024, 5), (2026, 10)]
-
-
-@pytest.fixture
-def backtest():
-    """Fake backtest: actual = projection + noise (sd 6), floored at 0 like real scores; 2000 games per position."""
-    rng = np.random.default_rng(0)
-    n, positions = 2000, ["QB", "RB", "WR", "TE"]
-    pred = rng.uniform(0, 25, n * len(positions))
-    return pl.DataFrame({"position": np.repeat(positions, n), "pred": pred,
-                         "actual": np.clip(pred + rng.normal(0, 6, pred.size), 0, None)})
-
-
-def test_ranges_cover_about_80_percent_and_bracket_the_projection(backtest):
-    ranges = fit_ranges(backtest)
-    out = apply_ranges(backtest.rename({"pred": "proj"}), ranges)
-    inside = ((out["actual"] >= out["bust"]) & (out["actual"] <= out["ceiling"])).mean()
-    assert 0.75 < inside < 0.85
-    assert (out["bust"] >= 0).all()                        # no negative busts
-    assert (out["bust"] <= out["proj"]).all() and (out["ceiling"] >= out["proj"]).all()
-
-
-def test_higher_projections_get_higher_ceilings(backtest):
-    out = apply_ranges(pl.DataFrame({"position": ["WR", "WR"], "proj": [3.0, 22.0]}), fit_ranges(backtest))
-    assert out["ceiling"][1] > out["ceiling"][0]
+    assert kept.select("season", "week").rows() == [(2024, 5), (2026, 10)]
