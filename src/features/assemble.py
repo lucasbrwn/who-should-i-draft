@@ -19,6 +19,7 @@ import polars as pl
 
 from src.features.age import build_age_features, read_players
 from src.features.decay import build_decay_features
+from src.features.depth import build_depth_features, read_depth
 from src.features.defense import PBP_COLS as DEFENSE_PBP_COLS
 from src.features.defense import build_defense_features, defense_plays, fantasy_over_expected_allowed
 from src.features.matchup import PBP_COLS as MATCHUP_PBP_COLS
@@ -74,7 +75,8 @@ def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> p
     routes = build_route_features(pw, read_participation(sorted(pw["season"].unique().to_list())), pbp)
     offseason = build_offseason_features(pw, read_week1_rosters())
     decay = build_decay_features(pw)
-    return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes, offseason, decay])
+    depth = build_depth_features(pw, read_depth(pw, schedules))
+    return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes, offseason, decay, depth])
 
 
 def feature_columns(feats: pl.DataFrame) -> list[str]:

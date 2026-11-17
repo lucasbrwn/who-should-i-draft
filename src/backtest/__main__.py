@@ -15,6 +15,7 @@ from src.models.baseline import Baseline
 from src.models.boosting import STAT_ERROR_PATH, TD_STATS, TUNED_PATH, BoostingModel
 from src.features.age import FEATURES as AGE_FEATURES
 from src.features.decay import FEATURES as DECAY_FEATURES
+from src.features.depth import FEATURES as DEPTH_FEATURES
 from src.features.preseason import FEATURES as PRESEASON_FEATURES
 from src.features.offseason import FEATURES as OFFSEASON_FEATURES
 from src.features.routes import FEATURES as ROUTE_FEATURES
@@ -39,7 +40,9 @@ MODELS = {"baseline": Baseline, "ridge": RidgeModel,
           # SCRUM-94 A/B: the default model without offseason vacated opportunity
           "boosting_no_offseason": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_offseason", drop=OFFSEASON_FEATURES),
           # Exponential-decay A/B: the default model without the *_ewm columns
-          "boosting_no_decay": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_decay", drop=DECAY_FEATURES)}
+          "boosting_no_decay": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_decay", drop=DECAY_FEATURES),
+          # Depth-chart A/B: the default model without depth_rank / depth_starter
+          "boosting_no_depth": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_depth", drop=DEPTH_FEATURES)}
 DEFAULT_MODELS = ["baseline", "ridge", "boosting"]
 TOP_FEATURES = 5
 
