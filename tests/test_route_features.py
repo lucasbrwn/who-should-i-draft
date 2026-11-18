@@ -43,9 +43,30 @@ def test_windows_use_earlier_games_only():
         for i in range(n_db):
             plays.append((g, i, "REG", "DET", 1, 0))
             on.append((g, i, "wr1" if i < n_routes else "wr2"))
-    f = build_route_features(pw, part(on), pbp(plays)).sort("week")
+    f = build_route_features(pw, part(on), pbp(plays), estimate=False).sort("week")
     assert f["routes_std"].to_list()[0] is None                              # week 1: nothing before it
     assert f["route_participation_std"][1] == pytest.approx(1.0)            # week 2 sees only week 1: 40/40
     assert f["route_participation_std"][2] == pytest.approx(60 / 80)        # week 3: weeks 1-2, never week 3
     assert f["targets_per_route_std"][2] == pytest.approx(12 / 60)
     assert f["yards_per_route_std"][2] == pytest.approx(120 / 60)
+
+
+def test_estimate_fills_only_games_without_participation():
+    """Games with participation keep real routes; a game without it gets snaps x team dropbacks /
+    team plays x the position scale learned from the real games."""
+    from src.features.routes import estimate_routes
+    pw = pl.DataFrame({
+        "game_id": ["g1", "g2"], "team": ["X", "X"], "position": ["WR", "WR"],
+        "offense_snaps": [50, 40], "routes": [30, None], "team_dropbacks": [36, None],
+    })
+    plays = pl.DataFrame({
+        "game_id": ["g1"] * 60 + ["g2"] * 60, "posteam": ["X"] * 120, "season_type": ["REG"] * 120,
+        # each game: 36 dropbacks (pass plays) and 24 runs
+        "play_type": (["pass"] * 36 + ["run"] * 24) * 2,
+        "qb_dropback": ([1] * 36 + [0] * 24) * 2, "qb_spike": [0] * 120,
+    })
+    out = estimate_routes(pw, plays).sort("game_id")
+    assert out["routes"][0] == 30                     # real routes untouched
+    # raw estimate g1 = 50 x 36/60 = 30 -> scale 30/30 = 1.0; g2 = 40 x 36/60 x 1.0 = 24
+    assert out["routes"][1] == pytest.approx(24.0)
+    assert out["team_dropbacks"][1] == 36
