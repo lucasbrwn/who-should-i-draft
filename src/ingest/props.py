@@ -104,10 +104,13 @@ def main() -> None:
     parser.add_argument("--season", type=int, required=True)
     parser.add_argument("--week", type=int, required=True)
     parser.add_argument("--dry-run", action="store_true", help="list this week's games only (free)")
+    parser.add_argument("--games", nargs="+", default=None, help="only these game_ids (e.g. to test cheaply)")
     args = parser.parse_args()
     key = api_key()
     events, _ = get(f"{API}/events", {"apiKey": key})
     week = week_events(events, read_schedules(), args.season, args.week)
+    if args.games:
+        week = [e for e in week if e["game_id"] in args.games]
     print(f"{len(week)} games this week found in the odds API")
     if args.dry_run:
         for e in week:
