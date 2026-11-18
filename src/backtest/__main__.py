@@ -17,6 +17,7 @@ from src.features.age import FEATURES as AGE_FEATURES
 from src.features.decay import FEATURES as DECAY_FEATURES
 from src.features.depth import FEATURES as DEPTH_FEATURES
 from src.features.redzone import FEATURES as REDZONE_FEATURES
+from src.features.qb_rush import FEATURES as QB_RUSH_FEATURES
 from src.features.preseason import FEATURES as PRESEASON_FEATURES
 from src.features.offseason import FEATURES as OFFSEASON_FEATURES
 from src.features.routes import FEATURES as ROUTE_FEATURES
@@ -45,7 +46,9 @@ MODELS = {"baseline": Baseline, "ridge": RidgeModel,
           # Depth-chart A/B: the default model without depth_rank / depth_starter
           "boosting_no_depth": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_depth", drop=DEPTH_FEATURES),
           # Red-zone / Vegas TD expectation A/B: the default model without the red-zone columns
-          "boosting_no_redzone": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_redzone", drop=REDZONE_FEATURES)}
+          "boosting_no_redzone": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_redzone", drop=REDZONE_FEATURES),
+          # QB rushing split A/B (designed runs vs scrambles): the default model without those columns
+          "boosting_no_qbrush": lambda: BoostingModel(tuned=TUNED_PATH, name="boosting_no_qbrush", drop=QB_RUSH_FEATURES)}
 DEFAULT_MODELS = ["baseline", "ridge", "boosting"]
 TOP_FEATURES = 5
 
