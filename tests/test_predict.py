@@ -45,11 +45,12 @@ def test_upcoming_rows_pick_up_the_injury_report_when_it_is_out():
     assert rows["report_status"].to_list() == ["Questionable"]
 
 
-def test_train_rows_never_include_this_week_the_future_or_the_final_exam():
+def test_train_rows_never_include_this_week_or_the_future():
+    # 2025 is used for training since the final exam ran (2026-11-18, v2)
     feats = pl.DataFrame({"season": [2024, 2025, 2026, 2026, 2026], "week": [5, 5, 10, 11, 12],
                           "player_id": ["a"] * 5})
     kept = train_rows(feats, 2026, 11)
-    assert kept.select("season", "week").rows() == [(2024, 5), (2026, 10)]
+    assert kept.select("season", "week").rows() == [(2024, 5), (2025, 5), (2026, 10)]
 
 
 def test_scenario_blend_weights_by_chance_starters_play():

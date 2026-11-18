@@ -67,7 +67,7 @@ def main() -> None:
     (out / "meta.txt").write_text(
         f"generated_utc: {now.isoformat()}\nseason: {args.season}\nweek: {args.week}\n"
         f"model: boosting (tuned, models/boosting_params.json), git {commit}\n"
-        f"trained on: every finished game 2020-{args.season} before week {args.week}, except 2025 (final exam holdout)\n"
+        f"trained on: every finished game 2020-{args.season} before week {args.week} (2025 included since the final exam, v2)\n"
         f"likely range: 25th-75th pct outcome, BucketRanges(LIKELY) (src/models/ranges.py), 2022-24 backtest\n"
         f"calibration: per-position isotonic tier calibration fit on 2021-24 walk-forward predictions\n"
         f"proj = expected points = proj_if_plays x p_play (depth rank + injury report; src/models/play_chance.py)\n"

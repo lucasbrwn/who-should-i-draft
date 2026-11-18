@@ -6,8 +6,8 @@ Steps:
                        if it's out. Players on IR / practice squad get no row.
     2. build_all       the normal feature pipeline over history + those rows. Every feature only
                        looks at earlier games (tests/test_leakage.py), so blank rows are safe.
-    3. BoostingModel   tuned weekly model, trained on every finished game EXCEPT 2025, which
-                       stays untouched until the final exam (SCRUM-66).
+    3. BoostingModel   tuned weekly model, trained on every finished game before this week.
+                       (2025 was held out until the final exam; it ran 2026-11-18, so v2 trains on it.)
     4. Scenarios       teammates of key players who might sit also get a "he's out" projection
                        (proj_without), shown as info. Blending it into proj FAILED its 2024 test
                        (src/backtest/scenario_test.py), so proj itself is unchanged.
@@ -20,7 +20,7 @@ from pathlib import Path
 
 import polars as pl
 
-from src.backtest.harness import FINAL_EXAM_SEASON, points
+from src.backtest.harness import points
 from src.features.assemble import PBP_COLS, build_all
 from src.features.team import read_schedules
 from src.ingest.pbp import read_pbp
@@ -65,15 +65,15 @@ def upcoming_rows(rosters: pl.DataFrame, schedules: pl.DataFrame, injuries: pl.D
 
 
 def train_rows(feats: pl.DataFrame, season: int, week: int) -> pl.DataFrame:
-    """Every finished game before this week, minus the final-exam season."""
+    """Every finished game before this week (2025 included since the final exam ran, 2026-11-18)."""
     before = (pl.col("season") < season) | ((pl.col("season") == season) & (pl.col("week") < week))
     # sorted: boosting bins features from a row sample, so row order must be fixed for repeatable picks
-    return feats.filter(before & (pl.col("season") != FINAL_EXAM_SEASON)).sort("season", "week", "player_id")
+    return feats.filter(before).sort("season", "week", "player_id")
 
 
 def play_chance_seasons(season: int) -> list[int]:
-    """Earlier seasons for the play-chance rates; never the final-exam season."""
-    return [s for s in range(2021, season) if s != FINAL_EXAM_SEASON]
+    """Earlier seasons for the play-chance rates and tier calibration (2025 included since the exam)."""
+    return list(range(2021, season))
 
 
 UNCERTAIN = ["Questionable", "Doubtful", "Out"]
