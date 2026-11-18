@@ -50,3 +50,18 @@ def test_train_rows_never_include_this_week_the_future_or_the_final_exam():
                           "player_id": ["a"] * 5})
     kept = train_rows(feats, 2026, 11)
     assert kept.select("season", "week").rows() == [(2024, 5), (2026, 10)]
+
+
+def test_scenario_blend_weights_by_chance_starters_play():
+    from src.predict.week import scenario_blend
+    out = pl.DataFrame({"player_id": ["walker", "johnson", "other"], "team": ["KC", "KC", "BUF"],
+                        "proj": [20.0, 6.0, 10.0]})
+    without = pl.DataFrame({"player_id": ["johnson", "other"], "proj_without": [18.0, 10.0]})
+    absent = pl.DataFrame({"player_id": ["walker"], "team": ["KC"], "p_play": [0.45]})
+    r = scenario_blend(out, without, absent).sort("player_id")
+    johnson = r.filter(pl.col("player_id") == "johnson").row(0, named=True)
+    assert johnson["proj"] == pytest.approx(0.45 * 6 + 0.55 * 18)     # blend
+    assert johnson["proj_without"] == 18.0 and johnson["absent_chance"] == pytest.approx(0.55)
+    walker = r.filter(pl.col("player_id") == "walker").row(0, named=True)
+    assert walker["proj"] == 20.0 and walker["absent_chance"] == 0.0   # the absent player himself isn't blended
+    assert r.filter(pl.col("player_id") == "other")["proj"][0] == 10.0  # other teams untouched
