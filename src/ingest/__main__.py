@@ -12,7 +12,7 @@ import argparse
 import time
 
 from src.ingest import (
-    availability, ff_opportunity, in_game_injuries, pbp, player_stats, player_weeks, schedules,
+    availability, depth_charts, ff_opportunity, in_game_injuries, pbp, player_stats, player_weeks, schedules,
 )
 
 DOWNLOADS = [
@@ -22,6 +22,7 @@ DOWNLOADS = [
     ("play-by-play", pbp.ingest),
     ("weekly rosters", in_game_injuries.download_rosters),
     ("expected fantasy points", ff_opportunity.ingest),
+    ("depth charts", depth_charts.ingest),
 ]
 
 

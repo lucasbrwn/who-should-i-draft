@@ -13,8 +13,13 @@ For TEs and RBs it overcounts a little (a pass-blocking snap counts as a route) 
 Windows match usage.py: l3, l5, std (this season, games before this week) and prev (last season).
 Games where he left injured are left out. Spikes don't count as dropbacks.
 
-Participation data stops at 2025 (nflverse publishes it after the season), so 2026 rows only
-have the _prev columns until it's released.
+Participation data stops at 2025 (nflverse publishes it after the season). For games without it
+(2026), routes are ESTIMATED (estimate_routes): offense snaps x the team's dropbacks / plays x a
+per-position scale fit on games that do have participation. Checked 2026-11-17 (scale fit on 2024,
+scored on 2025): correlation with real routes WR .98, TE .96, RB .96; typical miss 2-3 routes a game.
+Tested 2026-11-17 (src/backtest/route_estimate_test.py, 2024 replayed with routes missing): estimate vs
+blank WR Spearman +.004 [.001,.008], nothing worse -> ON by default. Ceiling (real routes vs blank)
+is small: WR MAE -0.021, TE -0.034, so paying for charted 2026 routes isn't worth it.
 
 Usage:
     python -m src.features.routes
@@ -29,7 +34,7 @@ from src.features.usage import GROUP, ID_COLS, KEY, WINDOWS
 PLAYER_WEEKS_PATH = Path("data/processed/player_weeks.parquet")
 PARTICIPATION_DIR = Path("data/raw/participation")
 OUT_PATH = Path("data/processed/features_routes.parquet")
-PBP_COLS = ["game_id", "play_id", "season_type", "posteam", "qb_dropback", "qb_spike"]
+PBP_COLS = ["game_id", "play_id", "season_type", "posteam", "qb_dropback", "qb_spike", "play_type"]
 
 MEANS = ["routes"]
 RATIOS = {
@@ -73,6 +78,31 @@ def add_route_columns(pw: pl.DataFrame, per_game: pl.DataFrame) -> pl.DataFrame:
     return out.with_columns(routes=pl.when(pl.col("team_dropbacks").is_not_null()).then(pl.col("routes").fill_null(0)))
 
 
+def team_play_counts(pbp: pl.DataFrame) -> pl.DataFrame:
+    """Every team-game's dropbacks (spikes excluded, as in routes_per_game) and pass + run plays."""
+    reg = pbp.filter(pl.col("season_type") == "REG")
+    return reg.group_by("game_id", team="posteam").agg(
+        est_dropbacks=((pl.col("qb_dropback") == 1) & (pl.col("qb_spike") != 1)).sum(),
+        est_plays=pl.col("play_type").is_in(["pass", "run"]).sum(),
+    ).filter(pl.col("est_plays") > 0)
+
+
+def estimate_routes(pw: pl.DataFrame, pbp: pl.DataFrame) -> pl.DataFrame:
+    """Fill routes / team_dropbacks for games with no participation data:
+    routes ~ offense snaps x team dropbacks / team plays x position scale (scale = real routes / raw
+    estimate over the games that DO have participation, so it never uses the games being filled)."""
+    counts = team_play_counts(pbp)
+    pw = pw.join(counts, on=["game_id", "team"], how="left").with_columns(
+        raw_est=pl.col("offense_snaps") * pl.col("est_dropbacks") / pl.col("est_plays"))
+    known = pw.filter(pl.col("team_dropbacks").is_not_null() & pl.col("raw_est").is_not_null() & (pl.col("raw_est") > 0))
+    scale = known.group_by("position").agg(scale=pl.col("routes").sum() / pl.col("raw_est").sum())
+    missing = pl.col("team_dropbacks").is_null() & pl.col("est_dropbacks").is_not_null()
+    return pw.join(scale, on="position", how="left").with_columns(
+        routes=pl.when(missing).then((pl.col("raw_est") * pl.col("scale")).round(1)).otherwise(pl.col("routes")),
+        team_dropbacks=pl.when(missing).then(pl.col("est_dropbacks")).otherwise(pl.col("team_dropbacks")),
+    ).drop("est_dropbacks", "est_plays", "raw_est", "scale")
+
+
 def finish(frame: pl.DataFrame, suffix: str, games: str) -> pl.DataFrame:
     s = lambda c: pl.col(f"{c}__sum")  # noqa: E731
     exprs = [(s(m) / pl.col(games)).alias(f"{m}_{suffix}") for m in MEANS]
@@ -101,8 +131,11 @@ def previous_season(usable: pl.DataFrame) -> pl.DataFrame:
     return finish(totals, "prev", "g_prev").with_columns(pl.col("season") + 1)
 
 
-def build_route_features(pw: pl.DataFrame, participation: pl.DataFrame, pbp: pl.DataFrame) -> pl.DataFrame:
+def build_route_features(pw: pl.DataFrame, participation: pl.DataFrame, pbp: pl.DataFrame,
+                         estimate: bool = True) -> pl.DataFrame:
     pw = add_route_columns(pw, routes_per_game(participation, pbp))
+    if estimate:
+        pw = estimate_routes(pw, pbp)
     usable = pw.filter(~pl.col("left_injured"))
     rows = pw.select(ID_COLS).sort("week")
     feats = rows.join_asof(through_each_game(usable).sort("week"), on="week", by=GROUP, strategy="backward",
