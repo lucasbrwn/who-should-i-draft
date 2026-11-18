@@ -11,7 +11,8 @@ Steps:
     4. Scenarios       teammates of key players who might sit also get a "he's out" projection
                        (proj_without), shown as info. Blending it into proj FAILED its 2024 test
                        (src/backtest/scenario_test.py), so proj itself is unchanged.
-    5. Ranges          likely range = 25th-75th percentile outcome (src/models/ranges.py, BucketRanges
+    5. Calibration     per-position tier calibration of "if he plays" points (src/models/weekly_calibration.py)
+    6. Ranges          likely range = 25th-75th percentile outcome (src/models/ranges.py, BucketRanges
                        with LIKELY), fit on the 2022-24 walk-forward backtest. Inside ~half the time.
 """
 
@@ -27,6 +28,7 @@ from src.ingest.player_weeks import INJURIES_DIR, attach_injury_report, read_dir
 from src.models.boosting import TUNED_PATH, BoostingModel
 from src.models.play_chance import PRE_GAME_ACTIVE, PlayChance, apply, game_day_pool
 from src.models.ranges import LIKELY, BucketRanges, load_backtest
+from src.models.weekly_calibration import WeeklyCalibration, load_history
 
 PW_PATH = Path("data/processed/player_weeks.parquet")
 ROSTERS_DIR = Path("data/raw/rosters")
@@ -153,8 +155,14 @@ def project_week(season: int, week: int) -> tuple[pl.DataFrame, pl.DataFrame]:
     # Scenario blending FAILED its test (docs/reports/scenario_test_2026-11-17.md), so the projection
     # stays "as if teammates play" (proj_with). proj_without is kept as display info only:
     # "if his injured starter sits, he projects X".
-    preds = project_rows(hist, upcoming, schedules, pbp, season, week, chance).with_columns(
-        proj=pl.col("proj_with").round(1), proj_without=pl.col("proj_without").round(1),
+    preds = project_rows(hist, upcoming, schedules, pbp, season, week, chance)
+    # tier calibration (passed its test 2026-11-17): reshape "if he plays" points by position using
+    # earlier seasons' mistakes; never reorders players at a position
+    cal = WeeklyCalibration().fit(load_history(play_chance_seasons(season)))
+    pos = preds["position"].to_numpy()
+    preds = preds.with_columns(
+        proj=pl.Series(cal.apply(preds["proj_with"].to_numpy(), pos)).round(1),
+        proj_without=pl.Series(cal.apply(preds["proj_without"].to_numpy(), pos)).round(1),
         absent_chance=pl.col("absent_chance").round(2)).drop("proj_with")
     # likely range = 25th-75th percentile outcome (he lands inside about half the time)
     preds = BucketRanges(LIKELY).fit(load_backtest()).predict(preds).select(

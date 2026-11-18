@@ -51,6 +51,7 @@ def main() -> None:
         f"model: boosting (tuned, models/boosting_params.json), git {commit}\n"
         f"trained on: every finished game 2020-{args.season} before week {args.week}, except 2025 (final exam holdout)\n"
         f"likely range: 25th-75th pct outcome, BucketRanges(LIKELY) (src/models/ranges.py), 2022-24 backtest\n"
+        f"calibration: per-position isotonic tier calibration fit on 2021-24 walk-forward predictions\n"
         f"proj = expected points = proj_if_plays x p_play (depth rank + injury report; src/models/play_chance.py)\n"
         f"players: {preds.height} active QB/RB/WR/TE\n"
     )
