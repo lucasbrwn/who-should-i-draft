@@ -65,3 +65,13 @@ def test_scenario_blend_weights_by_chance_starters_play():
     walker = r.filter(pl.col("player_id") == "walker").row(0, named=True)
     assert walker["proj"] == 20.0 and walker["absent_chance"] == 0.0   # the absent player himself isn't blended
     assert r.filter(pl.col("player_id") == "other")["proj"][0] == 10.0  # other teams untouched
+
+
+def test_next_week_is_the_week_of_the_next_game():
+    from datetime import date
+    from src.predict.next_week import next_week
+    sched = pl.DataFrame({"season": [2026] * 3, "week": [10, 11, 11], "game_type": ["REG"] * 3,
+                          "gameday": ["2026-11-16", "2026-11-19", "2026-11-22"]})
+    assert next_week(date(2026, 11, 19), sched) == (2026, 11)   # Thursday night game day
+    assert next_week(date(2026, 11, 21), sched) == (2026, 11)   # Saturday: Sunday games ahead
+    assert next_week(date(2026, 11, 17), sched) == (2026, 11)   # Tuesday after week 10
