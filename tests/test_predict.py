@@ -76,3 +76,25 @@ def test_next_week_is_the_week_of_the_next_game():
     assert next_week(date(2026, 11, 19), sched) == (2026, 11)   # Thursday night game day
     assert next_week(date(2026, 11, 21), sched) == (2026, 11)   # Saturday: Sunday games ahead
     assert next_week(date(2026, 11, 17), sched) == (2026, 11)   # Tuesday after week 10
+
+
+def test_espn_status_rules_players_out_and_fills_questionable():
+    from src.predict.week import apply_espn_status
+    rows = pl.DataFrame({"player_id": ["a", "b", "c", "d"], "player_display_name": list("ABCD"),
+                         "position": ["RB"] * 4, "team": ["X"] * 4, "opponent_team": ["Y"] * 4,
+                         "game_id": ["g"] * 4, "report_status": [None, None, "Doubtful", None],
+                         "on_injury_report": [False, False, True, False]})
+    espn = pl.DataFrame({"player_id": ["a", "b", "c", None], "espn_status": ["OUT", "QUESTIONABLE", "QUESTIONABLE", "OUT"]})
+    keep, out = apply_espn_status(rows, espn)
+    assert out["player_id"].to_list() == ["a"]                          # OUT -> no row (teammates see him absent)
+    k = keep.sort("player_id")
+    assert k["player_id"].to_list() == ["b", "c", "d"]
+    assert k["report_status"].to_list() == ["Questionable", "Doubtful", None]   # official report wins when present
+    assert k["on_injury_report"].to_list() == [True, True, False]
+
+
+def test_no_espn_means_no_change():
+    from src.predict.week import apply_espn_status
+    rows = pl.DataFrame({"player_id": ["a"], "report_status": [None], "on_injury_report": [False]})
+    keep, out = apply_espn_status(rows, None)
+    assert keep.equals(rows) and out.is_empty()

@@ -39,3 +39,12 @@ def test_live_blend_averages_and_converts_fp_rank():
     b = blend(preds, espn, fp, table).sort("player_id")
     assert b["blend"].to_list() == pytest.approx([(12 + 14 + 20) / 3, 8.0], abs=0.05)   # shown to 1 decimal
     assert b["blend_sources"].to_list() == [3, 1]
+
+
+def test_ruled_out_player_blends_to_zero():
+    from src.models.expert_blend import blend
+    table = {"WR": {"rank": [1.0, 10.0], "points": [20.0, 11.0]}}
+    preds = pl.DataFrame({"player_id": ["a"], "position": ["WR"], "proj": [0.0], "p_play": [0.0]})
+    b = blend(preds, pl.DataFrame({"player_id": ["a"], "espn_proj": [0.0]}),
+              pl.DataFrame({"player_id": ["a"], "fp_ecr": [1.0]}), table)
+    assert b["blend"].to_list() == [0.0]

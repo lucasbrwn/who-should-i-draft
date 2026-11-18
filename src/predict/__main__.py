@@ -55,7 +55,13 @@ def main() -> None:
     pl.Config.set_tbl_width_chars(140)
 
     now = datetime.now(timezone.utc)
-    preds, games = project_week(args.season, args.week)
+    espn = None
+    if not args.no_benchmarks:
+        try:  # ESPN's live injury status rules players out before projecting (v2); never blocks a run
+            espn = benchmarks.espn_projections(args.season, args.week)
+        except Exception as e:  # noqa: BLE001
+            print(f"ESPN status: FAILED ({e}); projecting with the nflverse injury report only")
+    preds, games = project_week(args.season, args.week, espn)
     demo = demo_table(preds, args.season, args.week)
 
     out = OUT_DIR / f"{args.season}_wk{args.week:02d}_{now:%Y%m%dT%H%M%SZ}"
@@ -72,6 +78,8 @@ def main() -> None:
         f"calibration: per-position isotonic tier calibration fit on 2021-24 walk-forward predictions\n"
         f"proj = expected points = proj_if_plays x p_play (depth rank + injury report; src/models/play_chance.py)\n"
         f"players: {preds.height} active QB/RB/WR/TE\n"
+        f"ESPN status: {'used' if espn is not None else 'NOT available'}; ruled out (OUT/IR/suspended): "
+        f"{(preds['p_play'] == 0).sum()} players\n"
     )
 
     print(f"\nDemo players, {args.season} week {args.week} (PPR):")
@@ -80,7 +88,7 @@ def main() -> None:
     print(games)
     if not args.no_benchmarks:
         try:  # a benchmark site being down must never block our own locked predictions
-            print("\n" + benchmarks.snapshot(args.season, args.week, out))
+            print("\n" + benchmarks.snapshot(args.season, args.week, out, espn))
         except Exception as e:  # noqa: BLE001
             print(f"\nbenchmarks: FAILED ({e}); our predictions are saved. Retry: "
                   f"python -m src.predict.benchmarks --season {args.season} --week {args.week} --out {out}")

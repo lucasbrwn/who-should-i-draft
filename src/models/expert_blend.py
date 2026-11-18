@@ -63,8 +63,9 @@ def blend(preds: pl.DataFrame, espn: pl.DataFrame, fp: pl.DataFrame, table: dict
     out = preds.join(espn, on="player_id", how="left").join(fp, on="player_id", how="left")
     out = out.with_columns(fp_pts=pl.struct("position", "fp_ecr").map_elements(
         lambda r: rank_to_points(r["position"], r["fp_ecr"], table), return_dtype=pl.Float64).round(1))
+    ruled_out = (pl.col("p_play") == 0) if "p_play" in out.columns else pl.lit(False)
     return out.with_columns(
-        blend=pl.mean_horizontal(SOURCES).round(1),
+        blend=pl.when(ruled_out).then(0.0).otherwise(pl.mean_horizontal(SOURCES)).round(1),
         blend_sources=pl.sum_horizontal([pl.col(c).is_not_null().cast(pl.Int8) for c in SOURCES]),
     ).sort("blend", descending=True)
 

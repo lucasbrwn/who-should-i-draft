@@ -64,6 +64,32 @@ def upcoming_rows(rosters: pl.DataFrame, schedules: pl.DataFrame, injuries: pl.D
     return attach_injury_report(rows, injuries)
 
 
+# ESPN's live player status (injuryStatus in the same JSON as its projections) is fresher than the
+# nflverse injury report: it has game-day inactives and mid-week IR moves (2026-11-18: Addison OUT,
+# Wan'Dale Robinson IR, Woody Marks DOUBTFUL while nflverse showed nothing). v2, Lucas chose (a).
+ESPN_ABSENT = {"OUT", "INJURY_RESERVE", "SUSPENSION"}
+ESPN_REPORT = {"DOUBTFUL": "Doubtful", "QUESTIONABLE": "Questionable"}
+
+
+def apply_espn_status(rows: pl.DataFrame, espn: pl.DataFrame | None) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """(rows to project, players ruled out). Ruled-out players get NO row, like a real absence in the
+    backtest, so teammates' vacated-opportunity features pick up their work. Doubtful/Questionable
+    fill the report status only where the official report has nothing yet."""
+    if espn is None or espn.is_empty():
+        return rows, rows.head(0).select("player_id")
+    st = espn.drop_nulls("player_id").unique("player_id").select("player_id", "espn_status")
+    rows = rows.join(st, on="player_id", how="left")
+    out = rows.filter(pl.col("espn_status").is_in(list(ESPN_ABSENT)))
+    keep = rows.filter(~pl.col("espn_status").is_in(list(ESPN_ABSENT)).fill_null(False))
+    espn_report = pl.col("espn_status").replace_strict(ESPN_REPORT, default=None)
+    keep = keep.with_columns(
+        report_status=pl.coalesce("report_status", espn_report),
+        on_injury_report=pl.col("on_injury_report") | espn_report.is_not_null(),
+    ).drop("espn_status")
+    return keep, out.select("player_id", "player_display_name", "position", "team", "opponent_team", "game_id",
+                            report_status=pl.lit("Out (ESPN: ") + pl.col("espn_status") + pl.lit(")"))
+
+
 def train_rows(feats: pl.DataFrame, season: int, week: int) -> pl.DataFrame:
     """Every finished game before this week (2025 included since the final exam ran, 2026-11-18)."""
     before = (pl.col("season") < season) | ((pl.col("season") == season) & (pl.col("week") < week))
@@ -139,8 +165,9 @@ def scenario_blend(out: pl.DataFrame, without: pl.DataFrame, absent: pl.DataFram
     ).drop("q", "is_absent")
 
 
-def project_week(season: int, week: int) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """All active players' projections for the week, plus that week's games with Vegas lines."""
+def project_week(season: int, week: int, espn: pl.DataFrame | None = None) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """All active players' projections for the week, plus that week's games with Vegas lines.
+    espn: this run's ESPN pull (src/predict/benchmarks.py); its injury status rules players out."""
     pw = pl.read_parquet(PW_PATH)
     seasons = sorted(pw["season"].unique().to_list())
     schedules = read_schedules().filter(pl.col("season").is_in(seasons))
@@ -150,7 +177,7 @@ def project_week(season: int, week: int) -> tuple[pl.DataFrame, pl.DataFrame]:
     injuries = read_dir(INJURIES_DIR, "injuries", [season])
 
     hist = pw.filter((pl.col("season") < season) | ((pl.col("season") == season) & (pl.col("week") < week)))
-    upcoming = upcoming_rows(rosters, schedules, injuries, season, week)
+    upcoming, ruled_out = apply_espn_status(upcoming_rows(rosters, schedules, injuries, season, week), espn)
     chance = PlayChance().fit(game_day_pool(play_chance_seasons(season), schedules))
     # Scenario blending FAILED its test (docs/reports/scenario_test_2026-11-17.md), so the projection
     # stays "as if teammates play" (proj_with). proj_without is kept as display info only:
@@ -169,6 +196,9 @@ def project_week(season: int, week: int) -> tuple[pl.DataFrame, pl.DataFrame]:
         pl.exclude("bust", "ceiling"), likely_low=pl.col("bust").round(1), likely_high=pl.col("ceiling").round(1))
     # projection so far = points IF he plays; expected points = that x chance he plays (src/models/play_chance.py)
     preds = apply(preds, chance)
+    if not ruled_out.is_empty():  # shown with 0 so the user sees WHY a player vanished
+        preds = pl.concat([preds, ruled_out.with_columns(proj=pl.lit(0.0), proj_if_plays=pl.lit(None, pl.Float64),
+                                                         p_play=pl.lit(0.0))], how="diagonal_relaxed")
 
     games = schedules.filter((pl.col("season") == season) & (pl.col("week") == week)).select(
         "game_id", "gameday", "gametime", "away_team", "home_team", "spread_line", "total_line").sort("gameday", "gametime")

@@ -51,8 +51,10 @@ def parse_espn(players: list[dict], season: int, week: int) -> pl.DataFrame:
             if (s.get("seasonId") == season and s.get("scoringPeriodId") == week
                     and s.get("statSourceId") == PROJECTION and s.get("statSplitTypeId") == 1):
                 rows.append({"espn_id": str(p["id"]), "espn_name": p["fullName"],
-                             "espn_proj": round(float(s.get("appliedTotal", 0.0)), 2)})
-    return pl.DataFrame(rows, schema={"espn_id": pl.String, "espn_name": pl.String, "espn_proj": pl.Float64})
+                             "espn_proj": round(float(s.get("appliedTotal", 0.0)), 2),
+                             "espn_status": p.get("injuryStatus")})
+    return pl.DataFrame(rows, schema={"espn_id": pl.String, "espn_name": pl.String, "espn_proj": pl.Float64,
+                                      "espn_status": pl.String})
 
 
 def player_ids() -> pl.DataFrame:
@@ -76,10 +78,11 @@ def fantasypros_week() -> pl.DataFrame:
                     fp_scrape_date=pl.col("scrape_date")).join(ids, on="fantasypros_id", how="left")
 
 
-def snapshot(season: int, week: int, out: Path) -> str:
-    """Save espn.csv and fantasypros.csv into a prediction run folder; return a one-line summary."""
+def snapshot(season: int, week: int, out: Path, espn: pl.DataFrame | None = None) -> str:
+    """Save espn.csv and fantasypros.csv into a prediction run folder; return a one-line summary.
+    espn: pass the ESPN pull already used for this run's injury statuses, so both are the same moment."""
     fetched = datetime.now(timezone.utc).isoformat()
-    espn = espn_projections(season, week).with_columns(fetched_utc=pl.lit(fetched))
+    espn = (espn if espn is not None else espn_projections(season, week)).with_columns(fetched_utc=pl.lit(fetched))
     fp = fantasypros_week().with_columns(fetched_utc=pl.lit(fetched))
     espn.write_csv(out / "espn.csv")
     fp.write_csv(out / "fantasypros.csv")
