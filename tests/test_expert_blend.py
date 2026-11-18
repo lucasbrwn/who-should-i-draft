@@ -26,3 +26,16 @@ def test_blend_averages_available_sources():
     b = add_blends(f)
     assert b["blend"].to_list() == pytest.approx([12.0, 13.0])
     assert b["experts only"].to_list() == pytest.approx([13.0, 16.0])
+
+
+def test_live_blend_averages_and_converts_fp_rank():
+    from src.models.expert_blend import blend, rank_to_points
+    table = {"WR": {"rank": [1.0, 10.0], "points": [20.0, 11.0]}}
+    assert rank_to_points("WR", 5.5, table) == pytest.approx(15.5)
+    assert rank_to_points("WR", 50.0, table) == pytest.approx(11.0)       # flat past the end
+    preds = pl.DataFrame({"player_id": ["a", "b"], "position": ["WR", "WR"], "proj": [12.0, 8.0]})
+    espn = pl.DataFrame({"player_id": ["a", None], "espn_proj": [14.0, 3.0]})
+    fp = pl.DataFrame({"player_id": ["a"], "fp_ecr": [1.0]})
+    b = blend(preds, espn, fp, table).sort("player_id")
+    assert b["blend"].to_list() == pytest.approx([(12 + 14 + 20) / 3, 8.0], abs=0.05)   # shown to 1 decimal
+    assert b["blend_sources"].to_list() == [3, 1]

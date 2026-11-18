@@ -9,6 +9,7 @@ Saves to predictions/<season>_wk<week>_<UTC timestamp>/:
     games.csv          this week's games + Vegas spread/total (game predictions: SCRUM-75)
     espn.csv           ESPN's projections, fetched at the same moment (src/predict/benchmarks.py)
     fantasypros.csv    FantasyPros weekly expert rankings, same moment
+    blend.csv          THE weekly number: average of ours, ESPN, FantasyPros (src/models/expert_blend.py)
     meta.txt           when it ran, model version, what it trained on
 Run it again before kickoff to pick up the latest injury report; every run is kept.
 """
@@ -20,10 +21,27 @@ from pathlib import Path
 
 import polars as pl
 
+from src.models import expert_blend
 from src.predict import benchmarks
 from src.predict.week import demo_table, project_week
 
 OUT_DIR = Path("predictions")
+
+
+def write_blend(out: Path, preds: pl.DataFrame, demo: pl.DataFrame) -> None:
+    """blend.csv from this run's own predictions + the ESPN / FantasyPros numbers saved at the same moment."""
+    espn = pl.read_csv(out / "espn.csv", schema_overrides={"player_id": pl.String})
+    fp = pl.read_csv(out / "fantasypros.csv", schema_overrides={"player_id": pl.String})
+    b = expert_blend.blend(preds.select("player_id", "player_display_name", "position", "team", "opponent_team",
+                                        "report_status", "p_play", "proj"),
+                           espn, fp, expert_blend.load_map())
+    b.write_csv(out / "blend.csv")
+    with open(out / "meta.txt", "a", encoding="utf-8") as f:
+        f.write("blend = mean of proj (ours), espn_proj, fp_pts (FantasyPros ECR -> pts, models/fp_rank_points.json); "
+                f"{(b['blend_sources'] == 3).sum()} players have all three\n")
+    print("\nDemo players, blended (the weekly number):")
+    print(b.join(demo.select("player_id"), on="player_id", how="semi")
+          .select("player_display_name", "position", "proj", "espn_proj", "fp_ecr", "fp_pts", "blend", "blend_sources"))
 
 
 def main() -> None:
@@ -66,6 +84,8 @@ def main() -> None:
         except Exception as e:  # noqa: BLE001
             print(f"\nbenchmarks: FAILED ({e}); our predictions are saved. Retry: "
                   f"python -m src.predict.benchmarks --season {args.season} --week {args.week} --out {out}")
+        else:
+            write_blend(out, preds, demo)
     print(f"\nSaved to {out}")
 
 
