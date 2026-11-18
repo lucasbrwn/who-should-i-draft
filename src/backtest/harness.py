@@ -43,9 +43,10 @@ def actual_stats(rows: pl.DataFrame) -> pl.DataFrame:
     return rows.select("position", *[pl.col(c).alias(c[2:]) for c in rows.columns if c.startswith("y_")])
 
 
-def run(model, feats: pl.DataFrame, seasons: list[int] = SEASONS) -> pl.DataFrame:
-    """Walk forward through every week; return one row per player-game with predicted + actual points."""
-    if FINAL_EXAM_SEASON in seasons:
+def run(model, feats: pl.DataFrame, seasons: list[int] = SEASONS, allow_final_exam: bool = False) -> pl.DataFrame:
+    """Walk forward through every week; return one row per player-game with predicted + actual points.
+    allow_final_exam: ONLY src/backtest/final_exam.py sets this (SCRUM-66, run once at the model freeze)."""
+    if FINAL_EXAM_SEASON in seasons and not allow_final_exam:
         raise ValueError("2025 is the final exam: run it once, on purpose, not in the backtest")
     out = []
     for season in seasons:
