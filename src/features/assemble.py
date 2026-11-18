@@ -22,6 +22,7 @@ from src.features.decay import build_decay_features
 from src.features.depth import build_depth_features, read_depth
 from src.features.redzone import PBP_COLS as REDZONE_PBP_COLS
 from src.features.qb_rush import PBP_COLS as QB_RUSH_PBP_COLS
+from src.features.qb_redzone import PBP_COLS as QB_REDZONE_PBP_COLS
 from src.features.defense import PBP_COLS as DEFENSE_PBP_COLS
 from src.features.defense import build_defense_features, defense_plays, fantasy_over_expected_allowed
 from src.features.matchup import PBP_COLS as MATCHUP_PBP_COLS
@@ -40,7 +41,7 @@ KEY = ["player_id", "season", "week"]
 ID_COLS = ["player_id", "player_display_name", "position", "season", "week", "game_id", "team", "opponent_team"]
 TEAM_PBP_COLS = ["game_id", "season_type", "posteam", "play_type", "pass_oe"]
 PBP_COLS = list(dict.fromkeys(TEAM_PBP_COLS + DEFENSE_PBP_COLS + MATCHUP_PBP_COLS + ROUTES_PBP_COLS + REDZONE_PBP_COLS
-                              + QB_RUSH_PBP_COLS))
+                              + QB_RUSH_PBP_COLS + QB_REDZONE_PBP_COLS))
 
 # Modeled components + rare components (rates) + opportunities + PPR points for reference.
 TARGETS = [
@@ -81,6 +82,7 @@ def build_all(pw: pl.DataFrame, schedules: pl.DataFrame, pbp: pl.DataFrame) -> p
     depth = build_depth_features(pw, read_depth(pw, schedules))
     # red-zone / Vegas-TD features (src/features/redzone.py) tied in their A/B on 2026-11-17 -> not used
     # QB designed-run / scramble features (src/features/qb_rush.py) tied in their A/B on 2026-11-18 -> not used
+    # QB red-zone passing features (src/features/qb_redzone.py) tied (leaned better) on 2026-11-18 -> not used
     return assemble(pw, [usage, team, matchup, vacated, preseason, age, routes, offseason, decay, depth])
 
 
