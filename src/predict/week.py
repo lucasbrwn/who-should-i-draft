@@ -22,6 +22,7 @@ from src.features.team import read_schedules
 from src.ingest.pbp import read_pbp
 from src.ingest.player_weeks import INJURIES_DIR, attach_injury_report, read_dir
 from src.models.boosting import TUNED_PATH, BoostingModel
+from src.models.play_chance import PRE_GAME_ACTIVE, PlayChance, apply, game_day_pool
 from src.models.ranges import LIKELY, BucketRanges, load_backtest
 
 PW_PATH = Path("data/processed/player_weeks.parquet")
@@ -41,9 +42,11 @@ def week_games(schedules: pl.DataFrame, season: int, week: int) -> pl.DataFrame:
 
 def upcoming_rows(rosters: pl.DataFrame, schedules: pl.DataFrame, injuries: pl.DataFrame,
                   season: int, week: int) -> pl.DataFrame:
-    """Blank player-week rows for active skill players whose team plays this week."""
+    """Blank player-week rows for active skill players whose team plays this week. Past weeks' rosters
+    are game-day snapshots (inactives = INA), so INA counts as active: otherwise a backtest of a past
+    week would quietly drop the players who ended up sitting."""
     active = rosters.filter(
-        (pl.col("season") == season) & (pl.col("week") == week) & (pl.col("status") == "ACT")
+        (pl.col("season") == season) & (pl.col("week") == week) & pl.col("status").is_in(PRE_GAME_ACTIVE)
         & pl.col("position").is_in(POSITIONS) & pl.col("gsis_id").is_not_null()
     ).select(
         pl.col("gsis_id").alias("player_id"), pl.col("full_name").alias("player_display_name"),
@@ -61,6 +64,11 @@ def train_rows(feats: pl.DataFrame, season: int, week: int) -> pl.DataFrame:
     before = (pl.col("season") < season) | ((pl.col("season") == season) & (pl.col("week") < week))
     # sorted: boosting bins features from a row sample, so row order must be fixed for repeatable picks
     return feats.filter(before & (pl.col("season") != FINAL_EXAM_SEASON)).sort("season", "week", "player_id")
+
+
+def play_chance_seasons(season: int) -> list[int]:
+    """Earlier seasons for the play-chance rates; never the final-exam season."""
+    return [s for s in range(2021, season) if s != FINAL_EXAM_SEASON]
 
 
 def project_week(season: int, week: int) -> tuple[pl.DataFrame, pl.DataFrame]:
@@ -82,10 +90,13 @@ def project_week(season: int, week: int) -> tuple[pl.DataFrame, pl.DataFrame]:
     stats = model.predict(rows)
     pred_stats = rows.select("player_id", "position").join(stats, on="player_id", how="left")
     preds = rows.select("player_id", "player_display_name", "position", "team", "opponent_team", "game_id",
-                        "report_status").with_columns(proj=points(pred_stats.drop("player_id")).round(1))
+                        "depth_rank", "report_status", "practice_code").with_columns(
+        proj=points(pred_stats.drop("player_id")).round(1))
     # likely range = 25th-75th percentile outcome (he lands inside about half the time)
     preds = BucketRanges(LIKELY).fit(load_backtest()).predict(preds).select(
         pl.exclude("bust", "ceiling"), likely_low=pl.col("bust").round(1), likely_high=pl.col("ceiling").round(1))
+    # projection so far = points IF he plays; expected points = that x chance he plays (src/models/play_chance.py)
+    preds = apply(preds, PlayChance().fit(game_day_pool(play_chance_seasons(season), schedules)))
 
     games = schedules.filter((pl.col("season") == season) & (pl.col("week") == week)).select(
         "game_id", "gameday", "gametime", "away_team", "home_team", "spread_line", "total_line").sort("gameday", "gametime")
