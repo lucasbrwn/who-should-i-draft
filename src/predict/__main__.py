@@ -7,6 +7,8 @@ Saves to predictions/<season>_wk<week>_<UTC timestamp>/:
     demo_players.csv   the 10 demo players (projection, likely range, opponent, injury status)
     all_players.csv    every active QB/RB/WR/TE
     games.csv          this week's games + Vegas spread/total (game predictions: SCRUM-75)
+    espn.csv           ESPN's projections, fetched at the same moment (src/predict/benchmarks.py)
+    fantasypros.csv    FantasyPros weekly expert rankings, same moment
     meta.txt           when it ran, model version, what it trained on
 Run it again before kickoff to pick up the latest injury report; every run is kept.
 """
@@ -18,6 +20,7 @@ from pathlib import Path
 
 import polars as pl
 
+from src.predict import benchmarks
 from src.predict.week import demo_table, project_week
 
 OUT_DIR = Path("predictions")
@@ -27,6 +30,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--season", type=int, required=True)
     parser.add_argument("--week", type=int, required=True)
+    parser.add_argument("--no-benchmarks", action="store_true", help="skip the ESPN / FantasyPros snapshot")
     args = parser.parse_args()
     pl.Config.set_tbl_rows(40)
     pl.Config.set_tbl_cols(12)
@@ -54,6 +58,12 @@ def main() -> None:
     print(demo.select("name", "position", "team", "opponent_team", "proj", "likely_low", "likely_high", "report_status", "roster_status"))
     print("\nGames (spread_line: + = home team favored):")
     print(games)
+    if not args.no_benchmarks:
+        try:  # a benchmark site being down must never block our own locked predictions
+            print("\n" + benchmarks.snapshot(args.season, args.week, out))
+        except Exception as e:  # noqa: BLE001
+            print(f"\nbenchmarks: FAILED ({e}); our predictions are saved. Retry: "
+                  f"python -m src.predict.benchmarks --season {args.season} --week {args.week} --out {out}")
     print(f"\nSaved to {out}")
 
 
