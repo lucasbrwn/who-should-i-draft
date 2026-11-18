@@ -69,9 +69,14 @@ def test_season_model_learns_and_never_goes_negative():
     assert np.corrcoef(pred, df["actual"].to_numpy())[0, 1] > 0.9
 
 
-def test_2025_is_off_limits():
+def test_backtests_still_refuse_2025_without_the_switch():
+    # v2 (after the 2026-11-18 final exam): the 2026 board trains on 2025, but the dev backtests
+    # must never pick up 2025 by accident: re-runs on it are deliberate and labelled "seen data".
+    import src.backtest.vs_consensus as vc
+    from src.backtest.harness import run
+    assert 2025 not in vc.SEASONS
     with pytest.raises(ValueError, match="final exam"):
-        load_a(2025)
+        run(None, pl.DataFrame(), [2025])
 
 
 @needs_data

@@ -19,8 +19,8 @@ B. Season model: predicts actual season points (0 if he never played, so backups
    Trained on earlier seasons only (walk-forward), compared against the naive board
    (last season's PPG x 17) and A x expected games.
 
-2025 is the final exam (SCRUM-66): it's never built, trained on, or scored here. The 2026 board
-trains on 2021-2024 until the exam is done.
+2025 was the final exam (SCRUM-66, ran 2026-11-18 via src/backtest/final_exam_draft.py). Since then
+(v2) the 2026 board trains on 2021-2025. Dev evaluation still covers 2022-2024, each from earlier seasons.
 
 Usage:
     python -m src.models.season                 # build inputs, backtest 2022-2024, write boards
@@ -140,8 +140,8 @@ def neutralize(rows: pl.DataFrame, train: pl.DataFrame) -> pl.DataFrame:
 
 def expected_games(season: int, positions: pl.Series) -> np.ndarray:
     """Team games minus the position-average injury misses from earlier seasons (SCRUM-51)."""
-    _, table = availability.load_inputs(range(availability.FIRST_SEASON, min(season, EXAM_SEASON)))
-    model = availability.CHOSEN().fit(table.filter(pl.col("season") < min(season, EXAM_SEASON)))
+    _, table = availability.load_inputs(range(availability.FIRST_SEASON, season))
+    model = availability.CHOSEN().fit(table.filter(pl.col("season") < season))
     return 17 - model.predict(pl.DataFrame({"position": positions}))
 
 
@@ -149,7 +149,7 @@ def a_projection(season: int, scoring=SCORING) -> pl.DataFrame:
     """Option A for one season: preseason rows + per-game points from the weekly model."""
     players = week1_players(pl.read_parquet(rosters_path(season)), season)
     rows = preseason_rows(season, players)
-    history = pl.read_parquet(FEATURES_PATH).filter(pl.col("season") < min(season, EXAM_SEASON))
+    history = pl.read_parquet(FEATURES_PATH).filter(pl.col("season") < season)
     model = BoostingModel(tuned=TUNED_PATH, name="boosting").fit(history)
     per_game = model.predict(neutralize(rows, history))  # row-aligned with rows
     a_ppg = add_fantasy_points(per_game.drop("player_id").with_columns(position=rows["position"]), scoring)["points"]
@@ -283,8 +283,6 @@ def board(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def load_a(season: int, rebuild: bool = False) -> pl.DataFrame:
-    if season == EXAM_SEASON:
-        raise ValueError("2025 is the final exam: project it once, on purpose, in SCRUM-66")
     path = OUT_DIR / f"a_rows_{season}.parquet"
     if rebuild or not path.exists():
         OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -295,7 +293,7 @@ def load_a(season: int, rebuild: bool = False) -> pl.DataFrame:
 def season_table(rebuild: bool = False) -> pl.DataFrame:
     """Every non-exam season's board rows with inputs + actual results (shared with src/models/upside.py)."""
     pw, schedules = pl.read_parquet(PLAYER_WEEKS_PATH), read_schedules()
-    seasons = [s for s in range(FIRST_SEASON, LIVE_SEASON + 1) if s != EXAM_SEASON]
+    seasons = list(range(FIRST_SEASON, LIVE_SEASON + 1))  # 2025 included since the exam (v2)
     return pl.concat([season_dataset(load_a(s, rebuild), pw, schedules) for s in seasons], how="diagonal_relaxed")
 
 
@@ -317,7 +315,7 @@ def main() -> None:
     print(text)
 
     for season in [*EVAL_SEASONS, LIVE_SEASON]:  # boards, each from earlier seasons only
-        train = data.filter(pl.col("season") < min(season, EXAM_SEASON))
+        train = data.filter(pl.col("season") < season)
         test = data.filter(pl.col("season") == season)
         b = board(test.with_columns(season_b=pl.Series(SeasonModel().fit(train).predict(test))))
         b.write_parquet(OUT_DIR / f"board_{season}.parquet")

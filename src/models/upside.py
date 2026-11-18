@@ -138,7 +138,7 @@ def evaluate(results: pl.DataFrame) -> str:
 def upside_board(season: int, data: pl.DataFrame | None = None) -> pl.DataFrame:
     """floor / ceiling / breakout_p for a season, trained on earlier seasons only."""
     data = add_breakout_label(season_table() if data is None else data)
-    train = data.filter(pl.col("season") < min(season, EXAM_SEASON))
+    train = data.filter(pl.col("season") < season)  # 2025 included since the exam (v2)
     return UpsideModel().fit(train).predict(data.filter(pl.col("season") == season))
 
 
