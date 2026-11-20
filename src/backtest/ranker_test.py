@@ -53,9 +53,10 @@ REPORT_DIR = Path("docs/reports")
 KEY = ["player_id", "season", "week"]
 
 
-def rank_remap(frame: pl.DataFrame, score: str, values: str, out: str) -> pl.DataFrame:
-    """Inside each season-week-position, give the k-th highest `score` the k-th highest `values`."""
-    group = ["season", "week", "position"]
+def rank_remap(frame: pl.DataFrame, score: str, values: str, out: str,
+               group: tuple[str, ...] = ("season", "week", "position")) -> pl.DataFrame:
+    """Inside each group (default season-week-position), give the k-th highest `score` the k-th highest `values`."""
+    group = list(group)
     by_score = pl.col(score).rank("ordinal", descending=True).over(group)
     by_value = pl.col(values).rank("ordinal", descending=True).over(group)
     lookup = frame.select(*group, k=by_value, **{out: pl.col(values)})

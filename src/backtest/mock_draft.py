@@ -193,7 +193,11 @@ def main() -> None:
     ap.add_argument("--tag", default=None, help="report name override")
     ap.add_argument("--upside", type=float, default=0.0,
                     help="UPSIDE_WEIGHT for the upside-valued bench (SCRUM-94; pre-registered test value 0.5)")
+    ap.add_argument("--board-dir", default=None, help="read board_{season}.parquet from here (A/B tests)")
     args = ap.parse_args()
+    if args.board_dir:
+        global OUT_DIR
+        OUT_DIR = Path(args.board_dir)
     if args.merge:  # combine parallel parts (same rules, same seeds) into one report
         res = pl.concat([pl.read_parquet(f) for f in args.merge])
         tag = args.tag or f"mock_draft_{date.today()}"

@@ -34,3 +34,11 @@ def test_groups_never_mix():
                    frame([2.0, 1.0], [12.0, 3.0], pos="WR", week=2)])
     out = rank_remap(f, "score", "pred", "remap")
     assert out["remap"].to_list() == [25.0, 30.0, 6.0, 8.0, 12.0, 3.0]
+
+
+def test_season_groups_for_the_draft_board():
+    # season boards group by season x position only (no week)
+    f = pl.DataFrame({"season": [2024] * 3, "position": ["RB"] * 3, "score": [0.1, 0.9, 0.5],
+                      "season_b": [250.0, 120.0, 180.0]})
+    out = rank_remap(f, "score", "season_b", "remap", group=("season", "position"))
+    assert out["remap"].to_list() == [120.0, 250.0, 180.0]
