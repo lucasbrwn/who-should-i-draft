@@ -74,11 +74,13 @@ def _x(df: pl.DataFrame, cols: list[str], cats: dict[str, list[str]]) -> pd.Data
 def fit_rankers(train: pl.DataFrame) -> dict:
     """One LambdaRank model per position; rows sorted so each position-week group is contiguous."""
     train = train.filter(~pl.col("left_injured"))
-    train = train.with_columns(label=points(actual_stats(train)).round().clip(0, MAX_LABEL).cast(pl.Int32))
+    labels = points(actual_stats(train)).round().clip(0, MAX_LABEL).cast(pl.Int32)
     models = {}
     for pos in POSITIONS:
-        rows = train.filter(pl.col("position") == pos).sort("season", "week")
-        cols, cats = usable_columns(rows), {}
+        # pick feature columns BEFORE the label exists, so the answer can never become an input
+        cols, cats = usable_columns(train.filter(pl.col("position") == pos)), {}
+        assert not any(c == "label" or c.startswith("y_") for c in cols), "target leaked into features"
+        rows = train.with_columns(label=labels).filter(pl.col("position") == pos).sort("season", "week")
         groups = rows.group_by("season", "week", maintain_order=True).len()["len"].to_numpy()
         model = lgb.LGBMRanker(**PARAMS).fit(_x(rows, cols, cats), rows["label"].to_numpy(), group=groups)
         models[pos] = (model, cols, cats)
@@ -115,7 +117,7 @@ def main() -> None:
         blend_rank=pl.mean_horizontal("expected_rank", "espn_proj", "fp_pts"))
 
     lines = [f"# Ranking objective (LambdaRank + rank remap) vs current model, {SEASONS} ({date.today()})", "",
-             __doc__.split("\n\n")[2], "",
+             __doc__.split("\n\n")[3], "",
              "| version | vs FantasyPros: disagreements | right [95% CI] | vs ESPN: disagreements | right [95% CI] |",
              "| --- | --- | --- | --- | --- |"]
     res = {}
